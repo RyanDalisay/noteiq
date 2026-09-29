@@ -1,0 +1,15 @@
+<!-- NoteIQ custom code: footer.
+     Paste into Webflow: Site settings > Custom code > Footer code ("Before </body> tag"),
+     AFTER the GSAP / Lenis / Barba script tags. Uses the host picked in head.html. -->
+<script>
+  (function () {
+    var base = window.__niqBase || (location.hostname.endsWith(".webflow.io")
+      ? "https://staging-noteiq.ryan-200.workers.dev"
+      : "https://noteiq.ryan-200.workers.dev");
+
+    var js = document.createElement("script");
+    js.src = base + "/bundle.js";
+    js.async = false;
+    document.body.appendChild(js);
+  })();
+</script>

@@ -8,7 +8,7 @@ Custom JS/CSS for the NoteIQ Webflow site, bundled with esbuild (`build.mjs`) an
 - Load order lives in the `JS` / `CSS` lists in `build.mjs`. New files must be added there. `src/barba.js` stays last.
 - JS files are concatenated into one scope before bundling, so top-level names must be unique across files (the build fails otherwise). barba.js calls some of them by name.
 - GSAP (and plugins), Lenis and Barba are globals from Webflow's custom code. Don't bundle or import them.
-- The bundle is injected by `webflow/loader.html`, usually after DOMContentLoaded has fired. Initialize with `if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();`, never a bare DOMContentLoaded listener.
+- The bundle is injected by `webflow/footer.html` (CSS by `webflow/head.html`), usually after DOMContentLoaded has fired. Initialize with `if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();`, never a bare DOMContentLoaded listener.
 
 ## Project rules
 

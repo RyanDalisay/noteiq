@@ -1,0 +1,18 @@
+<!-- NoteIQ custom code: head.
+     Paste into Webflow: Site settings > Custom code > Head code ("Inside <head> tag").
+     Picks the staging/production host, stores it on window.__niqBase for footer.html,
+     and loads bundle.css. -->
+<link rel="preconnect" href="https://staging-noteiq.ryan-200.workers.dev">
+<link rel="preconnect" href="https://noteiq.ryan-200.workers.dev">
+<script>
+  (function () {
+    var base = window.__niqBase = location.hostname.endsWith(".webflow.io")
+      ? "https://staging-noteiq.ryan-200.workers.dev"
+      : "https://noteiq.ryan-200.workers.dev";
+
+    var css = document.createElement("link");
+    css.rel = "stylesheet";
+    css.href = base + "/bundle.css";
+    document.head.appendChild(css);
+  })();
+</script>
