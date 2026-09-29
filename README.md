@@ -34,3 +34,4 @@ npm run build   # minified dist/bundle.js + dist/bundle.css
 ## Webflow setup
 
 Paste `webflow/loader.html` into Site settings > Custom code > Footer code ("Before `</body>` tag"). It must come **after** Webflow's GSAP, Lenis and Barba script tags, because the bundle uses them as soon as it runs.
+
