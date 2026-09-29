@@ -1,0 +1,5 @@
+{
+  "name": "noteiq",
+  "compatibility_date": "2026-09-29",
+  "assets": { "directory": "./dist" }
+}
