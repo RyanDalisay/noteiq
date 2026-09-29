@@ -23,13 +23,11 @@ npm run build   # minified dist/bundle.js + dist/bundle.css
 
 ## Workflow
 
-1. Work on the `staging` branch and push. Workers Builds builds it and uploads a preview version (its URL is in the Cloudflare dashboard); production is not affected.
-2. Preview on the `.webflow.io` domain. The loader serves the staging build there.
-3. Test in a browser, then merge `staging` into `main` and push. Workers Builds deploys `main` to production, which the live domain loads.
+1. Work on the `staging` branch and push. Workers Builds builds it as a preview of the Worker at https://staging-noteiq.ryan-200.workers.dev; production is not affected.
+2. Preview on the `.webflow.io` domain. The loader serves the staging preview there.
+3. Test in a browser, then merge `staging` into `main` and push. Workers Builds deploys `main` to production at https://noteiq.ryan-200.workers.dev, which every other domain (including the live site) loads.
 
 `dist/` is not committed. Workers Builds runs `npm run build`, then deploys `dist/` as set in `wrangler.jsonc`.
-
-> The URLs in `webflow/loader.html` still point at the old Pages hosts and will be updated to the Worker URLs after the first deploy.
 
 ## Webflow setup
 

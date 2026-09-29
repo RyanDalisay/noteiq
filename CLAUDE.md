@@ -1,6 +1,6 @@
 # NoteIQ site code
 
-Custom JS/CSS for the NoteIQ Webflow site, bundled with esbuild (`build.mjs`) and served by a static-assets-only Cloudflare Worker (`wrangler.jsonc`, deployed by Workers Builds: `staging` builds a preview, `main` deploys production). See README.md for the workflow.
+Custom JS/CSS for the NoteIQ Webflow site, bundled with esbuild (`build.mjs`) and served by a static-assets-only Cloudflare Worker (`wrangler.jsonc`, deployed by Workers Builds): `staging` builds the preview at https://staging-noteiq.ryan-200.workers.dev (loaded on `*.webflow.io`), `main` deploys production at https://noteiq.ryan-200.workers.dev (loaded everywhere else). See README.md for the workflow.
 
 ## Build
 
