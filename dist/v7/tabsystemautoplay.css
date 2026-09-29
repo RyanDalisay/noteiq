@@ -1,1 +1,0 @@
-.tab-content__bottom:has(.tab-content__item.active) .tab-content__item:not(.active){opacity:.5}@media (hover:hover) and (pointer:fine){.tab-content__item:not(.active):hover .tab-content__item-bottom{background-color:#000000bf}.tab-content__item:not(.active):hover .content-item__nr{transform:translate(25%)}}

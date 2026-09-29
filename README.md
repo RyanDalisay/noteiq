@@ -1,44 +1,33 @@
-# noteiq
+# NoteIQ site code
 
-A live mirror of an [Odyn](https://app.odyn.dev) project. Synced one-way from Odyn to GitHub on every successful production deploy, so every version of your code is preserved in your own repository.
-
-**Latest version:** v7
-**Deployed:** 2026-09-29T18:07:15.548Z
+Custom JS/CSS for the NoteIQ marketing site (Webflow), hosted on Cloudflare Pages (project `noteiq`). GSAP and its plugins, Lenis and Barba are loaded by Webflow's own custom code, not by this repo.
 
 ## Layout
 
-- `src/` — current project source. Mirrors what you write in the Odyn editor.
-- `dist/v1/` … `dist/v7/` — built artifacts for each deploy. Versions accumulate; nothing here is ever overwritten.
-- `dist/latest/` — built artifacts for v7 (the most recent deploy). Overwritten on every deploy; files no longer produced are removed.
-- Each deploy commit is tagged `v{n}`.
+- `src/main.js`, `src/main.css`: fixed underlay nav setup
+- `src/barba.js`: page transitions; always bundled last
+- `src/animations/`: NoteIQ animations (`data-niq-anim`)
+- `src/components/`: other site components
+- `build.mjs`: build config and **load order** (add new files to the `JS` / `CSS` lists there)
+- `webflow/loader.html`: the snippet pasted into Webflow
+- `assets/videos/`: source videos (not deployed)
 
-## One-way mirror
+## Develop
 
-Odyn is the source of truth. Edits made in this repo will **not** sync back to Odyn — they will be overwritten by the next deploy. Clone the repo any time to inspect the project locally, browse version history, or mirror the artifacts to other hosts.
+```sh
+npm install
+npm run dev     # builds, watches src/, serves dist/ at http://localhost:8000
+npm run build   # minified dist/bundle.js + dist/bundle.css
+```
 
-## Serve from jsDelivr (optional)
+## Workflow
 
-If this repo is **public** on GitHub, [jsDelivr](https://www.jsdelivr.com/github) will serve any file under `dist/` over a free global CDN. This is in addition to your Odyn-hosted CDN URLs, not a replacement — the URLs in the Odyn dashboard are faster, with proper cache invalidation.
+1. Work on the `staging` branch and push. Cloudflare Pages deploys it to https://staging.noteiq.pages.dev.
+2. Preview on the `.webflow.io` domain. The loader serves staging there.
+3. Test in a browser, then merge `staging` into `main`. Pages deploys https://noteiq.pages.dev, which the live domain loads.
 
-For jsDelivr embeds in production, **always pin to a version tag**. Tagged URLs are immutable and cached forever; branch-path URLs (`@main/dist/latest/...`) are cached for up to 12 hours, so they lag your deploys.
+`dist/` is not committed. Cloudflare Pages builds it itself (build command `npm run build`, output directory `dist`).
 
-### Pinned to v7 (recommended for jsDelivr — immutable, cached forever)
+## Webflow setup
 
-- `transcription.js` → https://cdn.jsdelivr.net/gh/RyanDalisay/noteiq@v7/dist/v7/transcription.js
-- `main.js` → https://cdn.jsdelivr.net/gh/RyanDalisay/noteiq@v7/dist/v7/main.js
-- `progress-nav.js` → https://cdn.jsdelivr.net/gh/RyanDalisay/noteiq@v7/dist/v7/progress-nav.js
-- `radial-gsap-slider.js` → https://cdn.jsdelivr.net/gh/RyanDalisay/noteiq@v7/dist/v7/radial-gsap-slider.js
-- `scaling-scroll.js` → https://cdn.jsdelivr.net/gh/RyanDalisay/noteiq@v7/dist/v7/scaling-scroll.js
-- `table-of-contents.js` → https://cdn.jsdelivr.net/gh/RyanDalisay/noteiq@v7/dist/v7/table-of-contents.js
-- `tabsystemautoplay.js` → https://cdn.jsdelivr.net/gh/RyanDalisay/noteiq@v7/dist/v7/tabsystemautoplay.js
-- `thread-bg.js` → https://cdn.jsdelivr.net/gh/RyanDalisay/noteiq@v7/dist/v7/thread-bg.js
-- `threads.js` → https://cdn.jsdelivr.net/gh/RyanDalisay/noteiq@v7/dist/v7/threads.js
-- `barba.js` → https://cdn.jsdelivr.net/gh/RyanDalisay/noteiq@v7/dist/v7/barba.js
-- `compliance.js` → https://cdn.jsdelivr.net/gh/RyanDalisay/noteiq@v7/dist/v7/compliance.js
-- `draggable-marquee.js` → https://cdn.jsdelivr.net/gh/RyanDalisay/noteiq@v7/dist/v7/draggable-marquee.js
-
-…and 19 more under `dist/v7/`.
-
-`dist/latest/` is best used for direct GitHub raw, GitHub Pages, or local checkout — not for jsDelivr-fronted production traffic.
-
-If this repo is private, jsDelivr cannot reach it — keep using your Odyn-hosted CDN URLs.
+Paste `webflow/loader.html` into Site settings > Custom code > Footer code ("Before `</body>` tag"). It must come **after** Webflow's GSAP, Lenis and Barba script tags, because the bundle uses them as soon as it runs.

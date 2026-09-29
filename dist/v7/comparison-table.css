@@ -1,1 +1,0 @@
-.comparison-wrap{--columns-in-view: 1}.comparison-row:nth-of-type(2n){background:var(--swatch--pure-white)}.comparison-row:nth-of-type(odd){background:var(--swatch--soft-slate)}.comparison-row__cell[aria-label="not included"] .comparison-row__icon{color:var(--swatch--light-200)}
