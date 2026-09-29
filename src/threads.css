@@ -1,0 +1,75 @@
+/* =====================================================================
+   NoteIQ — "Say Goodbye to Loose Ends" animation (styles)
+   Mount: any element with  data-niq-anim="threads"  (threads.js fills it in)
+   All classes are prefixed lt- and scoped under .niq-lt, no Lumos overrides.
+   Nothing here animates the mount element itself, so Webflow interactions on
+   the mount (opacity / move / scale) keep working.
+   ===================================================================== */
+
+/* reserve the 1920:740 space before the script runs, so the layout doesn't jump */
+[data-niq-anim="threads"] {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1920/740;
+}
+
+.niq-lt {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1920/740;
+    overflow: hidden;
+    container-type: inline-size;
+}
+
+.niq-lt * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* artboard 1920 x 740, scaled to the container in pure CSS */
+.niq-lt .lt-stage {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1920px;
+    height: 740px;
+    transform-origin: 0 0;
+    transform: scale(tan(atan2(100cqw, 1920px)));
+    animation: lt-in .5s ease-out both;
+}
+
+.niq-lt .lt-dots {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1920px;
+    height: 740px;
+    display: block;
+}
+
+.niq-lt .lt-art {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1920px;
+    height: 740px;
+    display: block;
+    overflow: visible;
+}
+
+@keyframes lt-in {
+    from {
+        opacity: 0
+    }
+
+    to {
+        opacity: 1
+    }
+}
+
+@media (prefers-reduced-motion:reduce) {
+    .niq-lt .lt-stage {
+        animation: none;
+    }
+}

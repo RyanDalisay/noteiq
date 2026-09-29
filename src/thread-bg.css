@@ -1,0 +1,67 @@
+/* =====================================================================
+   NoteIQ — Features page thread background (styles)
+   Mount: any element with  data-niq-anim="thread-bg"  (thread-bg.js fills it in)
+   All classes are prefixed ot- and scoped under .niq-ot, no Lumos overrides.
+   Transparent background. Nothing here animates the mount element itself, so
+   Webflow interactions on the mount (opacity / move / scale) keep working.
+   ===================================================================== */
+
+/* reserve the 1920:740 space before the script runs, so the layout doesn't jump */
+[data-niq-anim="thread-bg"] {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1920/740;
+}
+
+.niq-ot {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1920/740;
+    overflow: hidden;
+    container-type: inline-size;
+    pointer-events: none;
+}
+
+.niq-ot * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* artboard 1920 x 740, scaled to the container in pure CSS */
+.niq-ot .ot-stage {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1920px;
+    height: 740px;
+    transform-origin: 0 0;
+    transform: scale(tan(atan2(100cqw, 1920px)));
+    animation: ot-in .6s ease-out both;
+}
+
+.niq-ot .ot-art {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1920px;
+    height: 740px;
+    display: block;
+    overflow: visible;
+}
+
+@keyframes ot-in {
+    from {
+        opacity: 0
+    }
+
+    to {
+        opacity: 1
+    }
+}
+
+@media (prefers-reduced-motion:reduce) {
+    .niq-ot .ot-stage {
+        animation: none;
+    }
+}

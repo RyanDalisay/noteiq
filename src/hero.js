@@ -1,0 +1,299 @@
+/* =====================================================================
+   NoteIQ UI story — hero animation
+   Four screens: Operational Overview → Recording → Summary Ready → Chart Checklist
+   Mount: add  data-niq-anim="hero"  to an empty Div Block in Webflow.
+   Needs GSAP 3 (uses the site's copy if present, else loads it from cdnjs).
+   ===================================================================== */
+(function () {
+    'use strict';
+
+    /* ---- component markup (photo URLs point at the Webflow assets) ---- */
+    var NIQ_HERO_LABEL = "Animated walkthrough of NoteIQ: an agency operations overview, recording a visit note, an AI summary appearing beside the form, and a chart checklist flagging items to complete, alongside photos of clinicians and care teams using it.";
+    var NIQ_HERO_MARKUP = "<svg width=\"0\" height=\"0\" style=\"position:absolute\" aria-hidden=\"true\"><symbol id=\"na-i-dash\" viewBox=\"0 0 24 24\"><rect width=\"7\" height=\"9\" x=\"3\" y=\"3\" rx=\"1\"/><rect width=\"7\" height=\"5\" x=\"14\" y=\"3\" rx=\"1\"/><rect width=\"7\" height=\"9\" x=\"14\" y=\"12\" rx=\"1\"/><rect width=\"7\" height=\"5\" x=\"3\" y=\"16\" rx=\"1\"/></symbol><symbol id=\"na-i-chsq\" viewBox=\"0 0 24 24\"><path d=\"M9 11l3 3L22 4\"/><path d=\"M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11\"/></symbol><symbol id=\"na-i-users\" viewBox=\"0 0 24 24\"><path d=\"M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/><path d=\"M23 21v-2a4 4 0 0 0-3-3.87\"/><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"/></symbol><symbol id=\"na-i-panel\" viewBox=\"0 0 24 24\"><rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\"/><path d=\"M9 3v18\"/><path d=\"m16 15-3-3 3-3\"/></symbol><symbol id=\"na-i-search\" viewBox=\"0 0 24 24\"><circle cx=\"11\" cy=\"11\" r=\"8\"/><path d=\"m21 21-4.35-4.35\"/></symbol><symbol id=\"na-i-cdown\" viewBox=\"0 0 24 24\"><path d=\"m6 9 6 6 6-6\"/></symbol><symbol id=\"na-i-cup\" viewBox=\"0 0 24 24\"><path d=\"m18 15-6-6-6 6\"/></symbol><symbol id=\"na-i-cleft\" viewBox=\"0 0 24 24\"><path d=\"m15 18-6-6 6-6\"/></symbol><symbol id=\"na-i-cright2\" viewBox=\"0 0 24 24\"><path d=\"m6 17 5-5-5-5\"/><path d=\"m13 17 5-5-5-5\"/></symbol><symbol id=\"na-i-aleft\" viewBox=\"0 0 24 24\"><path d=\"m12 19-7-7 7-7\"/><path d=\"M19 12H5\"/></symbol><symbol id=\"na-i-aright\" viewBox=\"0 0 24 24\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></symbol><symbol id=\"na-i-user\" viewBox=\"0 0 24 24\"><path d=\"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2\"/><circle cx=\"12\" cy=\"7\" r=\"4\"/></symbol><symbol id=\"na-i-clip\" viewBox=\"0 0 24 24\"><rect width=\"8\" height=\"4\" x=\"8\" y=\"2\" rx=\"1\"/><path d=\"M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2\"/><path d=\"m9 14 2 2 4-4\"/></symbol><symbol id=\"na-i-folder\" viewBox=\"0 0 24 24\"><path d=\"M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z\"/></symbol><symbol id=\"na-i-steth\" viewBox=\"0 0 24 24\"><path d=\"M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 12 0V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3\"/><path d=\"M8 15v1a6 6 0 0 0 12 0v-4\"/><circle cx=\"20\" cy=\"10\" r=\"2\"/></symbol><symbol id=\"na-i-heart\" viewBox=\"0 0 24 24\"><path d=\"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z\"/><path d=\"M3.22 12H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27\"/></symbol><symbol id=\"na-i-file\" viewBox=\"0 0 24 24\"><path d=\"M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z\"/><path d=\"M14 2v4a2 2 0 0 0 2 2h4\"/><path d=\"M16 13H8\"/><path d=\"M16 17H8\"/></symbol><symbol id=\"na-i-filechk\" viewBox=\"0 0 24 24\"><path d=\"M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z\"/><path d=\"M14 2v4a2 2 0 0 0 2 2h4\"/><path d=\"m9 15 2 2 4-4\"/></symbol><symbol id=\"na-i-ucog\" viewBox=\"0 0 24 24\"><circle cx=\"18\" cy=\"15\" r=\"3\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/><path d=\"M10 15H6a4 4 0 0 0-4 4v2\"/><path d=\"m21.7 16.4-.9-.3M15.2 13.9l-.9-.3M16.6 18.7l.3-.9M19.1 12.2l.3-.9M19.6 18.7l-.4-1M16.8 12.3l-.4-1M14.3 16.6l1-.4M20.7 13.8l1-.4\"/></symbol><symbol id=\"na-i-mic\" viewBox=\"0 0 24 24\"><path d=\"M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z\"/><path d=\"M19 10v2a7 7 0 0 1-14 0v-2\"/><path d=\"M12 19v3\"/></symbol><symbol id=\"na-i-pause\" viewBox=\"0 0 24 24\"><rect x=\"14\" y=\"4\" width=\"4\" height=\"16\" rx=\"1\"/><rect x=\"6\" y=\"4\" width=\"4\" height=\"16\" rx=\"1\"/></symbol><symbol id=\"na-i-rot\" viewBox=\"0 0 24 24\"><path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\"/><path d=\"M3 3v5h5\"/></symbol><symbol id=\"na-i-spark\" viewBox=\"0 0 24 24\"><path d=\"M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z\"/><path d=\"M20 3v4M22 5h-4\"/></symbol><symbol id=\"na-i-tri\" viewBox=\"0 0 24 24\"><path d=\"m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3\"/><path d=\"M12 9v4M12 17h.01\"/></symbol><symbol id=\"na-i-info\" viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 16v-4M12 8h.01\"/></symbol><symbol id=\"na-i-check\" viewBox=\"0 0 24 24\"><path d=\"M20 6 9 17l-5-5\"/></symbol><symbol id=\"na-i-ccheck\" viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"m9 12 2 2 4-4\"/></symbol><symbol id=\"na-i-save\" viewBox=\"0 0 24 24\"><path d=\"M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z\"/><path d=\"M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7\"/><path d=\"M7 3v4a1 1 0 0 0 1 1h7\"/></symbol></svg><div class=\"na-stage\"><div class=\"na-photo p1\" aria-hidden=\"true\"><img alt=\"\" src=\"https://cdn.prod.website-files.com/6a1bb45a16b28315dea69dc3/6abb27e7ddeafe1b04620ef2_noteiq-photo-1-overview.webp\" width=\"360\" height=\"360\" decoding=\"async\"></div><div class=\"na-photo p2\" aria-hidden=\"true\"><img alt=\"\" src=\"https://cdn.prod.website-files.com/6a1bb45a16b28315dea69dc3/6abb27e66e3f9ce9e83256d4_noteiq-photo-2-recording.webp\" width=\"360\" height=\"360\" decoding=\"async\"></div><div class=\"na-photo p3\" aria-hidden=\"true\"><img alt=\"\" src=\"https://cdn.prod.website-files.com/6a1bb45a16b28315dea69dc3/6abb27e6d341a9c24c3b383f_noteiq-photo-3-summary.webp\" width=\"360\" height=\"360\" decoding=\"async\"></div><div class=\"na-photo p4\" aria-hidden=\"true\"><img alt=\"\" src=\"https://cdn.prod.website-files.com/6a1bb45a16b28315dea69dc3/6abb27e6853d4e7176fca0e6_noteiq-photo-4-checklist.webp\" width=\"360\" height=\"360\" decoding=\"async\"></div><div class=\"na-screen\"><!-- top bar --><div class=\"na-top\" data-dim=\"1 2 3 4\"><div class=\"na-logo\"><svg class=\"na-lockup\" viewBox=\"0 0 882 192\" aria-hidden=\"true\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M3.9543 63.3369C4.99218 62.9496 6.11626 62.8527 7.20528 63.0566L19.6037 65.4072C20.715 65.6155 21.7467 66.128 22.5822 66.8887C23.4178 67.6494 24.024 68.6281 24.3342 69.7139L45.2502 143.163C46.0379 145.93 47.4871 148.465 49.4729 150.55C51.4587 152.634 53.922 154.206 56.6506 155.13L162.89 191.116L52.673 170.23C49.8426 169.694 47.1845 168.479 44.9279 166.69C42.6714 164.902 40.8838 162.593 39.718 159.962L0.518752 71.4824C0.071079 70.4704 -0.0913441 69.3553 0.0490254 68.2578C0.189472 67.1602 0.627422 66.1211 1.31563 65.2539C2.00379 64.3868 2.91644 63.7243 3.9543 63.3369ZM37.0207 31.8223C38.113 31.6367 39.2356 31.7525 40.2668 32.1572L52.008 36.7812C53.0571 37.1957 53.9701 37.8936 54.6457 38.7959C55.3213 39.6981 55.7327 40.7697 55.8342 41.8916L62.6096 117.956C62.8644 120.821 63.8119 123.582 65.3713 126.001C66.9307 128.42 69.0552 130.424 71.5617 131.842L169.187 187.057L64.8322 145.923C62.1542 144.869 59.7724 143.181 57.8908 141.006C56.0092 138.83 54.684 136.231 54.0295 133.432L32.1125 39.1777C31.8633 38.0996 31.9145 36.9735 32.259 35.9219C32.6036 34.8704 33.2285 33.9324 34.0676 33.21C34.9068 32.4874 35.9283 32.0079 37.0207 31.8223ZM74.8713 10.2998C74.8713 3.55168 82.4561 -0.426064 88.0197 3.40625L169.113 59.3027C170.895 60.53 172.352 62.1717 173.359 64.0859C174.365 66.0003 174.891 68.1309 174.89 70.293V138.672L187.055 147.059C187.522 147.378 187.904 147.805 188.169 148.305C188.434 148.804 188.573 149.361 188.575 149.926V158.698C188.573 159.072 188.469 159.437 188.274 159.756C188.079 160.075 187.8 160.334 187.468 160.507C187.136 160.679 186.763 160.758 186.39 160.735C186.017 160.712 185.657 160.588 185.349 160.376L174.901 153.177V164.983C174.901 171.732 167.316 175.709 161.752 171.874L80.6477 115.983C78.8652 114.756 77.4079 113.115 76.4016 111.2C75.3952 109.286 74.8705 107.155 74.8713 104.993V10.2998ZM92.9953 26.0479C92.5398 26.0204 92.085 26.1175 91.6809 26.3291C91.2769 26.5407 90.9387 26.8585 90.7023 27.248C90.4659 27.6377 90.3408 28.0844 90.34 28.54V96.8936C90.3397 99.0552 90.865 101.185 91.8713 103.099C92.8776 105.012 94.3343 106.654 96.1164 107.881L155.497 148.811C155.873 149.07 156.313 149.221 156.769 149.248C157.224 149.275 157.678 149.178 158.082 148.966C158.486 148.754 158.825 148.435 159.061 148.045C159.297 147.655 159.422 147.208 159.421 146.752L159.43 142.517L151.307 136.929C150.841 136.608 150.46 136.179 150.197 135.679C149.934 135.178 149.797 134.621 149.797 134.056V125.295C149.794 124.919 149.895 124.55 150.088 124.228C150.281 123.905 150.559 123.642 150.892 123.466C151.224 123.29 151.598 123.209 151.974 123.231C152.349 123.254 152.712 123.378 153.022 123.592L159.43 128.006V78.4014C159.431 76.2393 158.905 74.1087 157.899 72.1943C156.892 70.28 155.435 68.6385 153.653 67.4111L94.2658 26.4844C93.8902 26.2258 93.4507 26.0753 92.9953 26.0479ZM104.78 90.7139C105.156 90.7359 105.519 90.8609 105.828 91.0742L139.862 114.532C140.329 114.853 140.712 115.282 140.977 115.783C141.242 116.284 141.381 116.842 141.382 117.408V126.169C141.381 126.543 141.279 126.911 141.084 127.231C140.89 127.552 140.612 127.813 140.279 127.987C139.947 128.161 139.574 128.24 139.199 128.218C138.825 128.195 138.464 128.071 138.155 127.858L104.111 104.411C103.645 104.09 103.265 103.66 103.002 103.16C102.739 102.66 102.602 102.103 102.602 101.538V92.7773C102.6 92.4016 102.7 92.0323 102.894 91.71C103.087 91.3878 103.365 91.1248 103.697 90.9492C104.03 90.7736 104.405 90.6918 104.78 90.7139ZM104.78 66.5117C105.156 66.5338 105.519 66.6588 105.828 66.8721L145.658 94.3223C146.124 94.6434 146.505 95.072 146.768 95.5723C147.031 96.0727 147.167 96.6302 147.167 97.1953V105.956C147.169 106.332 147.068 106.701 146.875 107.023C146.682 107.346 146.404 107.609 146.071 107.784C145.739 107.96 145.364 108.042 144.988 108.02C144.613 107.997 144.25 107.872 143.941 107.659L104.111 80.209C103.645 79.888 103.265 79.459 103.002 78.959C102.739 78.4586 102.602 77.9011 102.602 77.3359V68.5752C102.6 68.1995 102.7 67.8302 102.894 67.5078C103.087 67.1856 103.365 66.9226 103.697 66.7471C104.03 66.5715 104.405 66.4897 104.78 66.5117ZM104.78 42.3613C105.156 42.3834 105.519 42.5074 105.828 42.7207L145.658 70.1709C146.124 70.492 146.505 70.9216 146.768 71.4219C147.031 71.9222 147.167 72.479 147.167 73.0439V81.7939C147.169 82.1694 147.068 82.5382 146.875 82.8604C146.682 83.1827 146.404 83.4465 146.071 83.6221C145.739 83.7977 145.364 83.8785 144.988 83.8564C144.613 83.8344 144.25 83.7103 143.941 83.4971L104.111 56.0469C103.645 55.7258 103.265 55.2962 103.002 54.7959C102.739 54.2955 102.602 53.739 102.602 53.1738V44.4238C102.6 44.0483 102.701 43.6796 102.894 43.3574C103.087 43.0351 103.365 42.7713 103.697 42.5957C104.03 42.4201 104.405 42.3393 104.78 42.3613ZM43.59 0C50.332 0.000163664 55.797 5.45793 55.7971 12.1904C55.7971 18.923 50.332 24.3807 43.59 24.3809C36.8479 24.3809 31.382 18.9231 31.382 12.1904C31.3821 5.45783 36.8479 0 43.59 0Z\" fill=\"#5D3FD3\"></path><path d=\"M806.549 31.7139C817.233 31.7139 827.1 33.5325 836.15 37.1709C845.2 40.8094 853.055 45.8909 859.717 52.415C866.505 58.9392 871.721 66.5925 875.366 75.375C879.137 84.1574 881.023 93.6926 881.023 103.98C881.023 114.269 879.137 123.804 875.366 132.587C871.596 141.369 866.316 149.085 859.529 155.734C856.802 158.405 853.875 160.833 850.748 163.02L867.071 191.115H836.338L826.548 174.037C820.213 175.635 813.547 176.436 806.549 176.437C795.991 176.437 786.186 174.617 777.136 170.979C768.086 167.34 760.167 162.258 753.38 155.734C746.719 149.085 741.502 141.369 737.732 132.587C733.961 123.804 732.075 114.269 732.075 103.98C732.075 93.6925 733.898 84.1574 737.543 75.375C741.314 66.5926 746.53 58.9391 753.192 52.415C759.979 45.8909 767.898 40.8094 776.948 37.1709C785.997 33.5324 795.865 31.7139 806.549 31.7139ZM415.529 69.1641C425.71 69.1641 434.949 71.4858 443.244 76.1279C451.54 80.7701 458.139 87.1061 463.041 95.1357C468.069 103.165 470.582 112.387 470.582 122.801C470.582 133.088 468.069 142.31 463.041 150.465C458.139 158.494 451.54 164.831 443.244 169.473C434.949 174.115 425.71 176.437 415.529 176.437C405.347 176.437 396.046 174.115 387.624 169.473C379.329 164.831 372.667 158.494 367.639 150.465C362.737 142.31 360.286 133.088 360.286 122.801C360.286 112.387 362.737 103.165 367.639 95.1357C372.667 87.1062 379.329 80.7701 387.624 76.1279C396.046 71.4858 405.347 69.1641 415.529 69.1641ZM612.459 69.1641C620.629 69.1641 627.857 70.4815 634.142 73.1162C640.426 75.6255 645.705 79.2017 649.979 83.8438C654.378 88.4859 657.709 93.8806 659.972 100.028C662.234 106.051 663.365 112.638 663.365 119.789C663.365 121.796 663.24 123.804 662.989 125.812C662.863 127.693 662.548 129.325 662.045 130.705H589.948C590.285 133.335 590.937 135.781 591.908 138.044C593.794 142.435 596.685 145.886 600.581 148.396C604.478 150.779 609.192 151.971 614.722 151.971C619.749 151.971 624.023 150.967 627.542 148.96C631.187 146.953 634.016 144.192 636.027 140.679L658.652 151.406C656.641 156.425 653.436 160.816 649.036 164.58C644.763 168.344 639.672 171.292 633.764 173.425C627.856 175.432 621.384 176.436 614.345 176.437C603.41 176.437 593.92 174.053 585.875 169.285C577.831 164.392 571.609 157.868 567.209 149.713C562.81 141.558 560.611 132.524 560.611 122.612C560.611 112.324 562.873 103.165 567.398 95.1357C572.048 87.106 578.271 80.7701 586.064 76.1279C593.857 71.4858 602.655 69.1641 612.459 69.1641ZM524.051 71.4229H548.184V95.8887H524.051V135.222C524.051 138.734 524.679 141.683 525.936 144.066C527.193 146.325 529.141 148.018 531.781 149.147C534.42 150.277 537.689 150.842 541.585 150.842C542.465 150.842 543.471 150.779 544.602 150.653C545.733 150.528 546.927 150.403 548.184 150.277V174.178C546.298 174.429 544.162 174.68 541.774 174.931C539.386 175.182 537.122 175.307 534.986 175.307C522.542 175.307 512.864 171.983 505.95 165.333C499.163 158.558 495.77 149.148 495.77 137.104V95.8887H478.424V71.4229H479.366C484.646 71.4229 488.668 70.1054 491.433 67.4707C494.324 64.836 495.77 60.8838 495.77 55.6143V48.0869H524.051V71.4229ZM312.362 117.282V33.9717H341.585V174.178H318.961L255.8 88.9941V174.178H226.575V33.9717H249.012L312.362 117.282ZM711.316 174.178H682.092V33.9717H711.316V174.178ZM415.529 94.5713C410.375 94.5713 405.85 95.8257 401.953 98.335C398.057 100.719 394.978 104.044 392.715 108.31C390.578 112.45 389.51 117.28 389.51 122.801C389.51 128.321 390.578 133.214 392.715 137.479C394.978 141.745 398.057 145.07 401.953 147.454C405.85 149.838 410.375 151.03 415.529 151.03C420.682 151.03 425.144 149.838 428.915 147.454C432.812 145.07 435.828 141.745 437.965 137.479C440.227 133.214 441.359 128.321 441.359 122.801C441.359 117.28 440.227 112.45 437.965 108.31C435.828 104.044 432.812 100.719 428.915 98.335C425.144 95.8257 420.682 94.5713 415.529 94.5713ZM806.549 58.0605C800.139 58.0605 794.167 59.1899 788.637 61.4482C783.232 63.5811 778.456 66.7182 774.308 70.8584C770.16 74.9986 766.955 79.8915 764.693 85.5371C762.43 91.0575 761.299 97.2055 761.299 103.98C761.299 110.756 762.43 116.966 764.693 122.612C766.955 128.258 770.16 133.151 774.308 137.291C778.456 141.306 783.232 144.443 788.637 146.701C794.167 148.96 800.139 150.089 806.549 150.089C808.624 150.089 810.646 149.968 812.615 149.731L794.482 118.096H824.649L836.834 139.07C837.501 138.497 838.155 137.905 838.789 137.291C842.937 133.151 846.142 128.258 848.405 122.612C850.667 116.966 851.798 110.756 851.798 103.98C851.798 97.2055 850.667 91.0575 848.405 85.5371C846.142 79.8915 842.937 74.9986 838.789 70.8584C834.641 66.7181 829.802 63.5811 824.272 61.4482C818.867 59.1899 812.959 58.0606 806.549 58.0605ZM612.459 91.748C607.557 91.7481 603.347 92.9396 599.827 95.3232C596.308 97.707 593.668 101.22 591.908 105.862C591.415 107.163 591.01 108.544 590.685 110.003H633.405C633.242 108.423 632.922 106.917 632.445 105.486C631.062 101.221 628.61 97.8955 625.091 95.5117C621.697 93.0026 617.487 91.748 612.459 91.748Z\" fill=\"#1E293C\"></path></svg></div><div class=\"na-search\"><svg class=\"ic\"><use href=\"#na-i-search\"/></svg>Search patients, records\u2026</div></div><!-- global sidebar --><div class=\"na-side\" data-dim=\"1 2 3 4\"><div class=\"na-side-pill\"></div><div class=\"na-nav\"><div class=\"na-ni on\" id=\"naNavDash\"><svg class=\"ic\"><use href=\"#na-i-dash\"/></svg><span class=\"lb\">Dashboard</span></div><div class=\"na-sec lb\">Clinical care</div><div class=\"na-ni\"><svg class=\"ic\"><use href=\"#na-i-chsq\"/></svg><span class=\"lb\">Patient Eligibility</span></div><div class=\"na-ni\" id=\"naNavPts\"><svg class=\"ic\"><use href=\"#na-i-users\"/></svg><span class=\"lb\">Patient List</span></div></div><div class=\"na-side-foot\"><div class=\"na-ni\"><svg class=\"ic\"><use href=\"#na-i-panel\"/></svg><span class=\"lb\">Collapse</span></div></div></div><div class=\"na-main\"><!-- ================= SCREEN 1 ================= --><section class=\"na-s1\"><div class=\"na-s1-hd\" data-dim=\"1\"><h2 class=\"na-h1\">Operational Overview</h2><span class=\"sk\" style=\"width:560px;margin-top:13px\"></span></div><div class=\"na-toggle\" data-dim=\"1\"><span>My Dashboard</span><span class=\"on\">Operational Overview</span></div><div class=\"na-filter\" data-dim=\"1\"><span class=\"sk\" style=\"width:84px\"></span><svg class=\"ic\"><use href=\"#na-i-cdown\"/></svg></div><div class=\"na-kpis\" data-dim=\"1\"><div class=\"na-kpi\" style=\"--c:#5D3FD3\"><div class=\"row\"><span class=\"sk\" style=\"width:96px\"></span><span class=\"na-live\"></span></div><div class=\"num\" data-count=\"11\">11</div><span class=\"sk\" style=\"width:160px\"></span></div><div class=\"na-kpi\" style=\"--c:#07BE9F\"><div class=\"row\"><span class=\"sk\" style=\"width:84px\"></span></div><div class=\"num\" data-count=\"4\">4</div><span class=\"sk\" style=\"width:150px\"></span></div><div class=\"na-kpi\" style=\"--c:#DFAB51\"><div class=\"row\"><span class=\"sk\" style=\"width:120px\"></span><span class=\"na-live\"></span></div><div class=\"num\" data-count=\"4\">4</div><span class=\"sk\" style=\"width:140px\"></span></div><div class=\"na-kpi\" style=\"--c:#64748B\"><div class=\"row\"><span class=\"sk\" style=\"width:80px\"></span></div><div class=\"num\" data-count=\"3\">3</div><span class=\"sk\" style=\"width:156px\"></span></div><div class=\"na-kpi\" style=\"--c:#3FB4D3\"><div class=\"row\"><span class=\"sk\" style=\"width:110px\"></span></div><div class=\"num\" data-count=\"16\" data-suffix=\"d\">16d</div><span class=\"sk\" style=\"width:120px\"></span></div></div><div class=\"na-card na-cap na-lift\" style=\"transform-origin:left center\"><div class=\"na-cap-hd\"><h3>Inpatient Cap<small>(12.4% of cap)</small></h3><p>GIP and inpatient respite days as a share of total care days, measured against the 20% aggregate cap.</p></div><div class=\"na-cap-bd\"><div class=\"na-stat\"><b id=\"naCapVal\">12.4%</b><span>GIP + respite of total care days</span></div><div class=\"na-stat m\"><b id=\"naCapHead\">7.6%</b><span>headroom to the 20% limit</span></div><div class=\"na-bar\"><div class=\"na-track\"><div class=\"na-fill\"></div></div><span class=\"na-bar-lbl\" style=\"left:0\">0%</span><span class=\"na-bar-lbl cur\">Current 12.4%</span><span class=\"na-bar-lbl lim\">Limit 20%</span></div></div><div class=\"na-cap-ft\"><span class=\"sk v\" style=\"width:104px\"></span></div></div><div class=\"na-row3\" data-dim=\"1\"><div class=\"na-card\"><div class=\"na-chd\"><span class=\"sk d\" style=\"width:150px;height:11px\"></span><span class=\"sk\" style=\"width:330px\"></span><span class=\"sk\" style=\"width:190px\"></span></div><div class=\"na-donut-row\"><svg class=\"na-donut\" width=\"120\" height=\"120\" viewBox=\"0 0 120 120\" style=\"transform:rotate(-90deg)\"><circle cx=\"60\" cy=\"60\" r=\"50.5\" fill=\"none\" stroke=\"#F1F3F9\" stroke-width=\"19\"/><circle cx=\"60\" cy=\"60\" r=\"50.5\" fill=\"none\" stroke=\"#5D3FD3\" stroke-width=\"19\" stroke-dasharray=\"79.33 237.98\"/><circle cx=\"60\" cy=\"60\" r=\"50.5\" fill=\"none\" stroke=\"#3FB4D3\" stroke-width=\"19\" stroke-dasharray=\"79.33 237.98\" stroke-dashoffset=\"-79.33\"/><circle cx=\"60\" cy=\"60\" r=\"50.5\" fill=\"none\" stroke=\"#07BE9F\" stroke-width=\"19\" stroke-dasharray=\"79.33 237.98\" stroke-dashoffset=\"-158.65\"/><circle cx=\"60\" cy=\"60\" r=\"50.5\" fill=\"none\" stroke=\"#DFAB51\" stroke-width=\"19\" stroke-dasharray=\"79.33 237.98\" stroke-dashoffset=\"-237.98\"/></svg><div class=\"na-leg\"><div><i style=\"background:#5D3FD3\"></i><span class=\"sk\" style=\"width:150px\"></span><span class=\"sk n\"></span></div><div><i style=\"background:#3FB4D3\"></i><span class=\"sk\" style=\"width:120px\"></span><span class=\"sk n\"></span></div><div><i style=\"background:#07BE9F\"></i><span class=\"sk\" style=\"width:135px\"></span><span class=\"sk n\"></span></div><div><i style=\"background:#DFAB51\"></i><span class=\"sk\" style=\"width:160px\"></span><span class=\"sk n\"></span></div></div></div><div class=\"na-lrow\"><span class=\"na-av\"></span><div><span class=\"sk d\" style=\"width:104px\"></span><span class=\"sk\" style=\"width:120px;margin-top:9px\"></span></div><span class=\"na-pill-sk\"></span></div><div class=\"na-lrow\"><span class=\"na-av\"></span><div><span class=\"sk d\" style=\"width:92px\"></span><span class=\"sk\" style=\"width:120px;margin-top:9px\"></span></div><span class=\"na-pill-sk\" style=\"width:76px\"></span></div><div class=\"na-lrow\"><span class=\"na-av\"></span><div><span class=\"sk d\" style=\"width:86px\"></span><span class=\"sk\" style=\"width:120px;margin-top:9px\"></span></div><span class=\"na-pill-sk\" style=\"width:100px\"></span></div><div class=\"na-lrow\"><span class=\"na-av\"></span><div><span class=\"sk d\" style=\"width:70px\"></span><span class=\"sk\" style=\"width:120px;margin-top:9px\"></span></div><span class=\"na-pill-sk\" style=\"width:96px\"></span></div></div><div class=\"na-card\"><div class=\"na-chd\"><span class=\"sk d\" style=\"width:170px;height:11px\"></span><span class=\"sk\" style=\"width:340px\"></span><span class=\"sk\" style=\"width:150px\"></span></div><div style=\"display:grid;place-items:center;padding:52px 0 26px\"><svg class=\"na-donut\" width=\"142\" height=\"142\" viewBox=\"0 0 142 142\" style=\"transform:rotate(-90deg)\"><circle cx=\"71\" cy=\"71\" r=\"60\" fill=\"none\" stroke=\"#F1F3F9\" stroke-width=\"22\"/><circle cx=\"71\" cy=\"71\" r=\"60\" fill=\"none\" stroke=\"#94A3B8\" stroke-width=\"22\" stroke-dasharray=\"188.5 188.5\"/><circle cx=\"71\" cy=\"71\" r=\"60\" fill=\"none\" stroke=\"#FBBF24\" stroke-width=\"22\" stroke-dasharray=\"94.25 282.74\" stroke-dashoffset=\"-188.5\"/><circle cx=\"71\" cy=\"71\" r=\"60\" fill=\"none\" stroke=\"#34D399\" stroke-width=\"22\" stroke-dasharray=\"47.12 329.87\" stroke-dashoffset=\"-282.74\"/><circle cx=\"71\" cy=\"71\" r=\"60\" fill=\"none\" stroke=\"#818CF8\" stroke-width=\"22\" stroke-dasharray=\"47.12 329.87\" stroke-dashoffset=\"-329.87\"/></svg></div><div class=\"na-leg\" style=\"padding:0 88px\"><div><i style=\"background:#94A3B8\"></i><span class=\"sk\" style=\"width:60px\"></span><span class=\"sk n\"></span></div><div><i style=\"background:#FBBF24\"></i><span class=\"sk\" style=\"width:110px\"></span><span class=\"sk n\"></span></div><div><i style=\"background:#34D399\"></i><span class=\"sk\" style=\"width:150px\"></span><span class=\"sk n\"></span></div><div><i style=\"background:#818CF8\"></i><span class=\"sk\" style=\"width:130px\"></span><span class=\"sk n\"></span></div></div></div><div class=\"na-card\"><div class=\"na-chd\"><span class=\"sk d\" style=\"width:190px;height:11px\"></span><span class=\"sk\" style=\"width:300px\"></span><span class=\"sk\" style=\"width:170px\"></span></div><div class=\"na-bars\"><i style=\"left:22px;height:210px;background:#EF4444\"></i><i style=\"left:158px;height:360px;background:#DFAB51\"></i><i style=\"left:294px;height:120px;background:#3FB4D3\"></i></div></div></div></section><!-- ================= PATIENT SHELL (2-4) ================= --><section class=\"na-ps\"><div class=\"na-crumb\" data-dim=\"2 3 4\"><svg class=\"ic\"><use href=\"#na-i-aleft\"/></svg>Back to Patient List<em>/ Maria Santos</em></div><div class=\"na-phead\" data-dim=\"2 3 4\"><div class=\"na-pav\">MS</div><div class=\"na-pname\"><b>Maria Santos</b><span class=\"na-active\">Active</span></div><div class=\"na-pmeta\"><span class=\"sk\" style=\"width:82px\"></span><span class=\"sk\" style=\"width:150px\"></span><span class=\"sk\" style=\"width:96px\"></span></div><div class=\"na-pchips\"><span class=\"sk\" style=\"width:150px\"></span><span class=\"sk\" style=\"width:200px\"></span><span class=\"sk\" style=\"width:230px\"></span><span class=\"sk\" style=\"width:120px\"></span><span class=\"sk\" style=\"width:130px\"></span></div><div class=\"na-pedit\"><span class=\"sk\" style=\"width:80px\"></span></div></div><div class=\"na-pbody\"><div class=\"na-ppan\" data-dim=\"2 3 4\"><div class=\"na-pmark\"></div><div class=\"na-ppan-top\"><span class=\"chev\"><svg class=\"ic\"><use href=\"#na-i-cright2\"/></svg></span><span class=\"lbl\">Patient profile</span></div><div class=\"na-pi\"><svg class=\"ic\"><use href=\"#na-i-user\"/></svg><span class=\"sk lb\" style=\"width:130px\"></span></div><div class=\"na-pi chk\"><svg class=\"ic\"><use href=\"#na-i-clip\"/></svg><span class=\"t lb\">Chart Checklist</span></div><div class=\"na-pi docs\"><svg class=\"ic\"><use href=\"#na-i-folder\"/></svg><span class=\"sk lb\" style=\"width:120px\"></span></div><div class=\"na-pi\"><svg class=\"ic\"><use href=\"#na-i-steth\"/></svg><span class=\"sk lb\" style=\"width:124px\"></span></div><div class=\"na-pi\"><svg class=\"ic\"><use href=\"#na-i-heart\"/></svg><span class=\"sk lb\" style=\"width:104px\"></span></div><div class=\"na-pi\"><svg class=\"ic\"><use href=\"#na-i-file\"/></svg><span class=\"sk lb\" style=\"width:140px\"></span></div><div class=\"na-pi\"><svg class=\"ic\"><use href=\"#na-i-ucog\"/></svg><span class=\"sk lb\" style=\"width:150px\"></span></div></div><div class=\"na-pcontent\"><!-- ===== SCREENS 2 + 3: visit note ===== --><div class=\"na-vv\"><div class=\"na-recbar\"><span class=\"l\"><span class=\"na-dot\"></span>This visit is being recorded</span><span class=\"tm na-tm\">00:00</span></div><div class=\"na-vv-in\"><div class=\"na-vv-hd\" data-dim=\"3\"><div class=\"na-back\"><svg class=\"ic\"><use href=\"#na-i-cleft\"/></svg><span class=\"sk v\" style=\"width:150px\"></span></div><span class=\"na-chip\">Visit notes</span><h3 class=\"na-h2\">Volunteer Visit Note</h3></div><div class=\"na-vv-row\"><div class=\"na-form\"><div class=\"na-strip na-lift\"><div class=\"na-strip-rec\"><div class=\"col\"><div class=\"t1\"><svg class=\"ic\"><use href=\"#na-i-mic\"/></svg><span class=\"na-dot rec\"></span>Recording <span class=\"tm na-tm\">00:00</span><span class=\"na-wave\"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div><div class=\"t2\">Keep filling in the form. It stays editable while the visit records.</div></div><div class=\"na-ctrls\"><span><svg class=\"ic\"><use href=\"#na-i-pause\"/></svg></span><span><svg class=\"ic\"><use href=\"#na-i-rot\"/></svg></span><span class=\"stop\"><i></i></span></div></div><div class=\"na-strip-sum\"><svg class=\"ic\"><use href=\"#na-i-spark\"/></svg><div class=\"col\"><div class=\"t1\">Summary ready</div><div class=\"t2\">It is open beside your form. AI-generated, so read it before you use it.</div></div></div></div><div class=\"na-sec2\" data-dim=\"3\"><div class=\"na-sec2-hd\"><h4>Patient Identification</h4><span class=\"sk\" style=\"width:190px\"></span></div><div class=\"na-grid\"><div class=\"na-fld\"><span class=\"sk\" style=\"width:150px\"></span><div class=\"na-in\"><span class=\"sk\" style=\"width:96px\"></span></div></div><div class=\"na-fld\"><span class=\"sk\" style=\"width:90px\"></span><div class=\"na-in\"><span class=\"sk\" style=\"width:80px\"></span></div></div><div class=\"na-fld\"><span class=\"sk\" style=\"width:46px\"></span><div class=\"na-in\"><span class=\"sk\" style=\"width:92px\"></span></div></div><div class=\"na-fld\"><span class=\"sk\" style=\"width:190px\"></span><div class=\"na-in\"><span class=\"sk\" style=\"width:110px\"></span></div></div><div class=\"na-fld\"><span class=\"sk\" style=\"width:110px\"></span><div class=\"na-in\"><span class=\"sk\" style=\"width:120px\"></span></div></div><div class=\"na-fld\"><span class=\"sk\" style=\"width:130px\"></span><div class=\"na-in\"><span class=\"sk\" style=\"width:150px\"></span></div></div></div></div><div class=\"na-sec2\" data-dim=\"3\"><div class=\"na-sec2-hd\"><h4>Visit Details</h4><span class=\"sk\" style=\"width:160px\"></span></div><div class=\"na-grid two\"><div class=\"na-fld\"><span class=\"sk\" style=\"width:70px\"></span><div class=\"na-in w\"><span class=\"sk na-type\" data-w=\"64\"></span><span class=\"na-caret\"></span></div></div><div class=\"na-fld\"><span class=\"sk\" style=\"width:80px\"></span><div class=\"na-in w\"><span class=\"sk na-type\" data-w=\"64\"></span><span class=\"na-caret\"></span></div></div><div class=\"na-fld na-full\"><span class=\"sk\" style=\"width:140px\"></span><div class=\"na-in w na-ta\"><span class=\"sk na-type\" data-w=\"420\"></span><span class=\"sk na-type\" data-w=\"360\"></span><span class=\"sk na-type\" data-w=\"240\"></span></div></div></div></div><div class=\"na-vv-ft\" data-dim=\"2 3\"><span class=\"na-btn\"><svg class=\"ic\"><use href=\"#na-i-save\"/></svg><span class=\"sk\" style=\"width:78px\"></span></span><span class=\"na-btn\" style=\"margin-left:auto\"><span class=\"sk\" style=\"width:44px\"></span></span><span class=\"na-btn p\">Sign &amp; Submit</span></div></div><div class=\"na-ai\"><div class=\"na-ai-in na-lift\"><div class=\"na-ai-hd\"><svg class=\"ic\"><use href=\"#na-i-spark\"/></svg>AI Reference (read only)</div><div class=\"na-ai-bd\"><div class=\"na-ai-sub na-ai-r\">AI Summarization<svg class=\"ic\"><use href=\"#na-i-cup\"/></svg></div><div class=\"na-verify na-ai-r\"><svg class=\"ic\"><use href=\"#na-i-tri\"/></svg>AI-generated. Verify before use</div><div class=\"blk\"><h5 class=\"na-ai-r\">Reason for visit</h5><span class=\"na-ln\">Scheduled volunteer companionship visit.</span><span class=\"na-ln\">Caregiver asked for respite cover this week.</span></div><div class=\"blk\"><h5 class=\"na-ai-r\">Services provided</h5><span class=\"na-ln b\">Companionship for about 90 minutes</span><span class=\"na-ln b\">Sat with the patient during caregiver errands</span><span class=\"na-ln b\">Light tidying of the bedside area</span></div><div class=\"blk\"><h5 class=\"na-ai-r\">Visit benefit</h5><span class=\"na-ln\">Patient stayed engaged throughout and</span><span class=\"na-ln\">was settled at the end of the visit.</span></div><div class=\"blk na-ai-r\"><span class=\"sk\" style=\"width:90px;height:8px;margin-bottom:12px\"></span><span class=\"sk\" style=\"width:300px\"></span><span class=\"sk\" style=\"width:250px\"></span><span class=\"sk\" style=\"width:280px\"></span></div><div class=\"blk na-ai-r\"><span class=\"sk\" style=\"width:110px;height:8px;margin-bottom:12px\"></span><span class=\"sk\" style=\"width:290px\"></span><span class=\"sk\" style=\"width:210px\"></span></div></div></div></div></div></div></div><!-- ===== SCREEN 4: chart checklist ===== --><div class=\"na-cv\"><div class=\"na-tabs\" data-dim=\"4\"><span class=\"na-tab\">Patient Admission</span><span class=\"sk\" style=\"width:118px\"></span><span class=\"sk\" style=\"width:84px\"></span><span class=\"sk\" style=\"width:84px\"></span><span class=\"sk\" style=\"width:130px\"></span></div><div class=\"na-cv-bd\"><div class=\"na-lcol\"><div class=\"na-card na-chk\"><div class=\"na-chk-hd\" data-dim=\"4\"><div class=\"r\"><h3>Patient Admission</h3><span class=\"na-stack\"><span class=\"na-badge w na-bd-a\">40% \u00b7 2 of 5 completed</span><span class=\"na-badge g na-bd-b\">100% \u00b7 5 of 5 completed</span></span></div><span class=\"sk\" style=\"width:560px\"></span></div><div class=\"na-flag na-lift\"><div class=\"na-crow\"><span class=\"na-stack ic-wrap\"><svg class=\"ic ic-a\"><use href=\"#na-i-ccheck\"/></svg><span class=\"ic-b\"><svg class=\"ic\"><use href=\"#na-i-check\"/></svg></span></span><div><div class=\"nm\">Patient Profile</div><div class=\"st na-stack\"><span class=\"w\"><svg class=\"ic\"><use href=\"#na-i-info\"/></svg>Needs re-completion</span><span class=\"g\"><svg class=\"ic\"><use href=\"#na-i-filechk\"/></svg>Completed today</span></div></div><div class=\"lk na-stack\"><span class=\"a\">Complete now<svg class=\"ic\"><use href=\"#na-i-aright\"/></svg></span><span class=\"b\">Open details<svg class=\"ic\"><use href=\"#na-i-aright\"/></svg></span></div></div><div class=\"na-crow\"><span class=\"na-stack ic-wrap\"><svg class=\"ic ic-a\"><use href=\"#na-i-ccheck\"/></svg><span class=\"ic-b\"><svg class=\"ic\"><use href=\"#na-i-check\"/></svg></span></span><div><div class=\"nm\">Primary Caregiver</div><div class=\"st na-stack\"><span class=\"w\"><svg class=\"ic\"><use href=\"#na-i-info\"/></svg>Needs re-completion</span><span class=\"g\"><svg class=\"ic\"><use href=\"#na-i-filechk\"/></svg>Completed today</span></div></div><div class=\"lk na-stack\"><span class=\"a\">Complete now<svg class=\"ic\"><use href=\"#na-i-aright\"/></svg></span><span class=\"b\">Open details<svg class=\"ic\"><use href=\"#na-i-aright\"/></svg></span></div></div><div class=\"na-crow\"><span class=\"na-stack ic-wrap\"><svg class=\"ic ic-a\"><use href=\"#na-i-ccheck\"/></svg><span class=\"ic-b\"><svg class=\"ic\"><use href=\"#na-i-check\"/></svg></span></span><div><div class=\"nm\">Patient Location (Place of Service)</div><div class=\"st na-stack\"><span class=\"w\"><svg class=\"ic\"><use href=\"#na-i-info\"/></svg>Needs re-completion</span><span class=\"g\"><svg class=\"ic\"><use href=\"#na-i-filechk\"/></svg>Completed today</span></div></div><div class=\"lk na-stack\"><span class=\"a\">Complete now<svg class=\"ic\"><use href=\"#na-i-aright\"/></svg></span><span class=\"b\">Open details<svg class=\"ic\"><use href=\"#na-i-aright\"/></svg></span></div></div></div><div class=\"na-crow-rest\" data-dim=\"4\"><div class=\"na-crow\"><span class=\"ic-wrap\"><span class=\"ic-b\"><svg class=\"ic\"><use href=\"#na-i-check\"/></svg></span></span><div><div class=\"nm\">Attending Physician</div><div class=\"st\"><span class=\"g\"><svg class=\"ic\"><use href=\"#na-i-filechk\"/></svg><span class=\"sk\" style=\"width:140px;background:#CDEFE6\"></span></span></div></div><div class=\"lk\"><span>Open details<svg class=\"ic\"><use href=\"#na-i-aright\"/></svg></span></div></div><div class=\"na-crow\"><span class=\"ic-wrap\"><span class=\"ic-b\"><svg class=\"ic\"><use href=\"#na-i-check\"/></svg></span></span><div><div class=\"nm\">Patient Clinical Data</div><div class=\"st\"><span class=\"g\"><svg class=\"ic\"><use href=\"#na-i-filechk\"/></svg><span class=\"sk\" style=\"width:140px;background:#CDEFE6\"></span></span></div></div><div class=\"lk\"><span>Open details<svg class=\"ic\"><use href=\"#na-i-aright\"/></svg></span></div></div></div></div><div class=\"na-card na-next\" data-dim=\"4\"><div class=\"na-chk-hd\"><div class=\"r\"><span class=\"sk d\" style=\"width:170px;height:12px\"></span><span class=\"sk\" style=\"width:120px;height:22px;border-radius:11px;background:var(--na-warn-bg)\"></span></div><span class=\"sk\" style=\"width:470px\"></span></div><div class=\"na-crow\"><span class=\"na-hol\"></span><div><span class=\"sk d\" style=\"width:150px;height:10px\"></span><span class=\"sk\" style=\"width:110px;margin-top:11px\"></span></div><span class=\"sk v\" style=\"width:96px;margin:14px 0 0 auto\"></span></div><div class=\"na-crow\"><span class=\"na-hol\"></span><div><span class=\"sk d\" style=\"width:190px;height:10px\"></span><span class=\"sk\" style=\"width:120px;margin-top:11px\"></span></div><span class=\"sk v\" style=\"width:96px;margin:14px 0 0 auto\"></span></div><div class=\"na-crow\"><span class=\"na-hol\"></span><div><span class=\"sk d\" style=\"width:130px;height:10px\"></span><span class=\"sk\" style=\"width:100px;margin-top:11px\"></span></div><span class=\"sk v\" style=\"width:96px;margin:14px 0 0 auto\"></span></div><div class=\"na-crow\"><span class=\"na-hol\"></span><div><span class=\"sk d\" style=\"width:170px;height:10px\"></span><span class=\"sk\" style=\"width:116px;margin-top:11px\"></span></div><span class=\"sk v\" style=\"width:96px;margin:14px 0 0 auto\"></span></div></div></div><div class=\"na-card na-ov\" data-dim=\"4\"><h4>Completion Overview</h4><div class=\"na-ring-row\"><div class=\"na-ring\"><svg viewBox=\"0 0 62 62\"><circle cx=\"31\" cy=\"31\" r=\"26\" fill=\"none\" stroke=\"#EEF1F6\" stroke-width=\"7\"/><circle class=\"na-ring-arc\" cx=\"31\" cy=\"31\" r=\"26\" fill=\"none\" stroke=\"#07BE9F\" stroke-width=\"7\" stroke-linecap=\"round\" stroke-dasharray=\"163.36\" stroke-dashoffset=\"163.36\"/></svg><b id=\"naRingPct\">0%</b></div><div><div class=\"na-stack na-ring-t\"><span class=\"na-rt-a\">27 items still to complete</span><span class=\"na-rt-b\">24 items still to complete</span></div><span class=\"sk\" style=\"width:130px\"></span></div></div><div class=\"na-srow\"><div class=\"top\"><span class=\"sk d\" style=\"width:112px\"></span></div><div class=\"bt\"><span class=\"na-strk\"><i class=\"na-adm\" style=\"background:#DFAB51\" data-w=\"40\"></i></span><span class=\"sk\" style=\"width:54px\"></span></div></div><div class=\"na-srow\"><div class=\"top\"><span class=\"sk d\" style=\"width:124px\"></span></div><div class=\"bt\"><span class=\"na-strk\"><i style=\"background:#DFAB51\" data-w=\"38\"></i></span><span class=\"sk\" style=\"width:54px\"></span></div></div><div class=\"na-srow\"><div class=\"top\"><span class=\"sk d\" style=\"width:96px\"></span></div><div class=\"bt\"><span class=\"na-strk\"><i style=\"background:#EF4444\" data-w=\"23\"></i></span><span class=\"sk\" style=\"width:54px\"></span></div></div><div class=\"na-srow\"><div class=\"top\"><span class=\"sk d\" style=\"width:88px\"></span></div><div class=\"bt\"><span class=\"na-strk\"><i data-w=\"0\"></i></span><span class=\"sk\" style=\"width:48px\"></span></div></div><div class=\"na-srow\" style=\"padding-bottom:6px\"><div class=\"top\"><span class=\"sk d\" style=\"width:130px\"></span></div><div class=\"bt\"><span class=\"na-strk\"><i data-w=\"0\"></i></span><span class=\"sk\" style=\"width:48px\"></span></div></div></div></div></div></div></div></section></div></div></div>";
+
+    /* ---- animation ---- */
+    function niqInit(root) {
+        if (root.classList.contains('na-ready')) return;
+        root.classList.add('na-ready');
+
+        /* ---- config ---- */
+        var RESOLVE_ENDING = true;   // screen 4 ends by checking off the flagged items
+
+        var $ = function (s) { return root.querySelector(s); };
+        var $$ = function (s) { return Array.prototype.slice.call(root.querySelectorAll(s)); };
+        var stage = $('.na-stage');
+
+        /* ---- responsive scale: 1500px artboard fits its container ---- */
+        function fit() { stage.style.transform = 'scale(' + (root.clientWidth / 1500) + ')'; }
+        fit();
+        if ('ResizeObserver' in window) { (root._ro = new ResizeObserver(fit)).observe(root); } else { window.addEventListener('resize', fit); }
+
+        /* ---- motion vocabulary ---- */
+        var EASE_IN_UP = 'power3.out', EASE_MOVE = 'power3.inOut';
+        var LIFT_ON = '0 30px 60px -18px rgba(30,41,60,0.30), 0 10px 22px -10px rgba(30,41,60,0.16)';
+        var LIFT_OFF = '0 0 0 0 rgba(30,41,60,0), 0 0 0 0 rgba(30,41,60,0)';
+        var tl = gsap.timeline({ repeat: -1, paused: true, defaults: { ease: EASE_IN_UP } });
+
+        function inUp(t, pos, o) { o = o || {}; return tl.fromTo(t, { autoAlpha: 0, y: o.y || 14 }, { autoAlpha: 1, y: 0, duration: o.d || .7, stagger: o.s || 0, ease: o.e || EASE_IN_UP }, pos); }
+        function outUp(t, pos, o) { o = o || {}; return tl.to(t, { autoAlpha: 0, y: -10, duration: o.d || .4, stagger: o.s || 0, ease: 'power2.in' }, pos); }
+        function dim(n, pos) { tl.to($$('[data-dim~="' + n + '"]'), { opacity: .32, duration: .55, ease: 'power2.out' }, pos); }
+        function undim(n, pos) { tl.to($$('[data-dim~="' + n + '"]'), { opacity: 1, duration: .5, ease: 'power2.out' }, pos); }
+        function lift(el, pos, s) { tl.to(el, { y: -8, scale: s || 1.03, boxShadow: LIFT_ON, duration: .7, ease: 'power3.out' }, pos); }
+        function drop(el, pos) { tl.to(el, { y: 0, scale: 1, boxShadow: LIFT_OFF, duration: .55, ease: 'power3.inOut' }, pos); }
+        function counter(el, to, pos, d, fmt, from) {
+            var o = { v: from || 0 };
+            tl.to(o, { v: to, duration: d, ease: 'power2.out', onUpdate: function () { el.textContent = fmt(o.v); } }, pos);
+        }
+
+        /* ---- elements ---- */
+        var s1Hd = $('.na-s1-hd'), toggle = $('.na-toggle'), filter = $('.na-filter'), kpis = $$('.na-kpi'), cap = $('.na-cap'), row3 = $$('.na-row3 .na-card');
+        var sideSec = $('.na-sec'), side = $('.na-side'), sidePill = $('.na-side-pill'), sideLbls = $$('.na-side .lb'), main = $('.na-main');
+        var navDash = $('#naNavDash'), navPts = $('#naNavPts');
+        var crumb = $('.na-crumb'), phead = $('.na-phead'), pav = $('.na-pav'), pname = $('.na-pname'), pmeta = $('.na-pmeta'), pchips = $('.na-pchips'), pedit = $('.na-pedit');
+        var ppan = $('.na-ppan'), pcont = $('.na-pcontent'), pmark = $('.na-pmark'), pChev = $('.na-ppan-top .chev'), pLbl = $('.na-ppan-top .lbl'), pLbls = $$('.na-pi .lb'), pDocs = $('.na-pi.docs'), pChk = $('.na-pi.chk');
+        var vv = $('.na-vv'), recbar = $('.na-recbar'), vvHd = $('.na-vv-hd'), strip = $('.na-strip'), stripRec = $('.na-strip-rec'), stripSum = $('.na-strip-sum'), secs = $$('.na-sec2'), vvFt = $('.na-vv-ft');
+        var wave = $$('.na-wave i'), recDot = $('.na-dot.rec'), timers = $$('.na-tm'), types = $$('.na-type'), carets = $$('.na-caret');
+        var ai = $('.na-ai'), aiIn = $('.na-ai-in'), aiHd = $('.na-ai-hd'), aiR = $$('.na-ai-r'), aiLn = $$('.na-ln');
+        var nextCard = $('.na-next'), cv = $('.na-cv'), tabs = $('.na-tabs'), chk = $('.na-chk'), chkHd = $('.na-chk-hd'), flag = $('.na-flag'), fRows = $$('.na-flag .na-crow'), rest = $('.na-crow-rest'), restRows = $$('.na-crow-rest .na-crow'), ov = $('.na-ov');
+        var ringArc = $('.na-ring-arc'), ringPct = $('#naRingPct'), bars = $$('.na-strk i'), admBar = $('.na-adm');
+        var C = 163.36;
+
+        /* ---- initial states (t = 0) ---- */
+        tl.set([stripSum, $('.na-bd-b'), $('.na-rt-b')], { autoAlpha: 0 }, 0);
+        tl.set($$('.na-flag .ic-b, .na-flag .st .g, .na-flag .lk .b'), { autoAlpha: 0 }, 0);
+        tl.set(ai, { width: 0, overflow: 'hidden' }, 0);
+        tl.set([crumb, phead, ppan, vv, cv], { autoAlpha: 0 }, 0);
+
+        /* ================= SCREEN 1 — Operational Overview ================= */
+        tl.addLabel('s1', 0);
+        inUp([s1Hd, toggle, filter], .15, { s: .07 });
+        inUp(kpis, .35, { s: .07 });
+        kpis.forEach(function (k, i) {
+            var n = k.querySelector('.num'), to = +n.dataset.count, suf = n.dataset.suffix || '';
+            counter(n, to, .55 + i * .07, 1.1, function (v) { return Math.round(v) + suf; });
+        });
+        inUp(cap, .7);
+        inUp(row3, .85, { s: .08 });
+        tl.fromTo($$('.na-donut'), { rotate: -150, scale: .85 }, { rotate: -90, scale: 1, duration: 1.1, ease: 'power3.out', stagger: .1 }, .95);
+        tl.fromTo($$('.na-bars i'), { scaleY: 0 }, { scaleY: 1, duration: .9, stagger: .08, ease: 'power3.out' }, 1.1);
+
+        // highlight: Inpatient Cap
+        tl.addLabel('s1hl', 1.9);
+        dim('1', 's1hl'); lift(cap, 's1hl', 1.018);
+        tl.fromTo($('.na-fill'), { width: '0%' }, { width: '62%', duration: 1.5, ease: 'power2.inOut' }, 's1hl+=.35');
+        counter($('#naCapVal'), 12.4, 's1hl+=.35', 1.5, function (v) { return v.toFixed(1) + '%'; });
+        counter($('#naCapHead'), 7.6, 's1hl+=.35', 1.5, function (v) { return v.toFixed(1) + '%'; }, 20);
+        tl.fromTo($$('.na-bar-lbl'), { autoAlpha: 0, y: 4 }, { autoAlpha: 1, y: 0, duration: .5, stagger: .12 }, 's1hl+=.5');
+        drop(cap, 's1hl+=2.6'); undim('1', 's1hl+=2.6');
+
+        /* ================= 1 → 2 ================= */
+        tl.addLabel('t12', 's1hl+=2.95');
+        outUp([s1Hd, toggle, filter].concat(kpis, [cap], row3), 't12', { s: .025 });
+        tl.to(sideLbls, { autoAlpha: 0, duration: .25, ease: 'power1.out' }, 't12+=.2');
+        tl.to(side, { width: 64, duration: .8, ease: EASE_MOVE }, 't12+=.3');
+        tl.to(sideSec, { height: 0, marginBottom: 0, duration: .8, ease: EASE_MOVE }, 't12+=.3');
+        tl.to(main, { left: 64, duration: .8, ease: EASE_MOVE }, 't12+=.3');
+        tl.to(sidePill, { top: 94, width: 44, duration: .8, ease: EASE_MOVE }, 't12+=.3');
+        tl.to($$('#naNavDash, #naNavDash svg'), { color: '#64748B', duration: .3 }, 't12+=.35');
+        tl.to($$('#naNavPts, #naNavPts svg'), { color: '#FFFFFF', duration: .3 }, 't12+=.75');
+        inUp(crumb, 't12+=.6', { y: -6, d: .5 });
+        inUp(phead, 't12+=.65', { y: 0, d: .3 });
+        inUp([pav, pname, pmeta, pchips, pedit], 't12+=.7', { s: .05 });
+        tl.fromTo(ppan, { autoAlpha: 0, x: -20 }, { autoAlpha: 1, x: 0, duration: .6 }, 't12+=.85');
+        inUp(vv, 't12+=1.0', { y: 24, d: .8 });
+        inUp([vvHd, strip].concat(secs, [vvFt]), 't12+=1.15', { s: .07, y: 10 });
+
+        /* ================= SCREEN 2 — Recording ================= */
+        tl.addLabel('s2', 't12+=1.3');
+        // timer + waveform run through screen 2
+        var tm = { v: 0 };
+        tl.to(tm, { v: 38, duration: 4.4, ease: 'none', onUpdate: function () { var s = '00:' + String(Math.floor(tm.v)).padStart(2, '0'); timers.forEach(function (e) { e.textContent = s; }); } }, 's2');
+        wave.forEach(function (b, i) {
+            var lo = .25 + ((i * 37) % 5) * .06, hi = .55 + ((i * 53) % 5) * .09;
+            tl.fromTo(b, { scaleY: lo }, { scaleY: hi, duration: .32 + ((i * 29) % 4) * .05, ease: 'sine.inOut', repeat: 11, yoyo: true }, 's2+=' + (i * .03).toFixed(2));
+        });
+        tl.fromTo(recDot, { opacity: 1 }, { opacity: .25, duration: .6, ease: 'sine.inOut', repeat: 5, yoyo: true }, 's2');
+
+        tl.addLabel('s2hl', 's2+=.9');
+        dim('2', 's2hl'); lift(strip, 's2hl', 1.035);
+        // the form stays editable: fields fill while recording
+        types.forEach(function (t, i) {
+            var at = 's2hl+=' + (0.55 + i * .33).toFixed(2), c = t.parentNode.querySelector('.na-caret');
+            if (c) tl.fromTo(c, { opacity: 0 }, { opacity: 1, duration: .08 }, at);
+            tl.fromTo(t, { width: 0 }, { width: +t.dataset.w, duration: .55, ease: 'steps(7)' }, at);
+            if (c) tl.to(c, { opacity: 0, duration: .1 }, 's2hl+=' + (1.15 + i * .33).toFixed(2));
+        });
+        drop(strip, 's2hl+=2.55'); undim('2', 's2hl+=2.55');
+
+        /* ================= 2 → 3 (same page) ================= */
+        tl.addLabel('t23', 's2hl+=2.9');
+        tl.to(recbar, { height: 0, duration: .55, ease: EASE_MOVE }, 't23');
+        tl.to(stripRec, { autoAlpha: 0, duration: .35, ease: 'power1.out' }, 't23+=.1');
+        tl.fromTo(stripSum, { autoAlpha: 0 }, { autoAlpha: 1, duration: .45, ease: 'power1.out' }, 't23+=.2');
+        tl.fromTo(stripSum.querySelectorAll('.ic, .col > *'), { y: 8, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: .55, stagger: .06 }, 't23+=.3');
+        tl.to(ai, { width: 378, duration: .9, ease: EASE_MOVE }, 't23+=.35');
+        tl.fromTo(aiIn, { x: 40, autoAlpha: 0 }, { x: 0, autoAlpha: 1, duration: .9, ease: 'power3.out' }, 't23+=.45');
+        inUp(aiR, 't23+=.9', { s: .06, y: 8, d: .5 });
+        tl.fromTo(aiLn, { clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0% 0 0)', duration: .45, stagger: .16, ease: 'power1.inOut' }, 't23+=1.15');
+        tl.set(ai, { overflow: 'visible' }, 't23+=1.3');
+
+        /* ================= SCREEN 3 — Summary ready ================= */
+        tl.addLabel('s3', 't23+=2.3');
+        tl.addLabel('s3hl', 's3');
+        dim('3', 's3hl'); lift(aiIn, 's3hl', 1.03);
+        drop(aiIn, 's3hl+=2.1'); undim('3', 's3hl+=2.1');
+
+        /* ================= 3 → 4 ================= */
+        tl.addLabel('t34', 's3hl+=2.45');
+        tl.to(vv, { autoAlpha: 0, y: -12, duration: .45, ease: 'power2.in' }, 't34');
+        tl.to(ppan, { width: 236, duration: .8, ease: EASE_MOVE }, 't34+=.25');
+        tl.to(pcont, { left: 236, duration: .8, ease: EASE_MOVE }, 't34+=.25');
+        tl.to(pmark, { top: 80, width: 220, duration: .8, ease: EASE_MOVE }, 't34+=.25');
+        tl.to(pChev, { autoAlpha: 0, duration: .2 }, 't34+=.25');
+        tl.fromTo(pLbl, { autoAlpha: 0 }, { autoAlpha: 1, duration: .3 }, 't34+=.7');
+        tl.fromTo(pLbls, { autoAlpha: 0 }, { autoAlpha: 1, duration: .35, stagger: .03 }, 't34+=.6');
+        tl.to(pDocs, { color: '#64748B', duration: .3 }, 't34+=.4');
+        tl.fromTo(pChk, { color: '#64748B' }, { color: '#5D3FD3', duration: .3 }, 't34+=.7');
+        tl.set(cv, { autoAlpha: 1 }, 't34+=.7');
+        inUp(tabs, 't34+=.75', { y: -6, d: .5 });
+        inUp([chk, ov, nextCard], 't34+=.9', { s: .1, y: 18 });
+        inUp([chkHd].concat(fRows, restRows), 't34+=1.05', { s: .06, y: 8, d: .55 });
+        tl.fromTo(ringArc, { strokeDashoffset: C }, { strokeDashoffset: C * (1 - .27), duration: 1.1, ease: 'power2.out' }, 't34+=1.3');
+        counter(ringPct, 27, 't34+=1.3', 1.1, function (v) { return Math.round(v) + '%'; });
+        bars.forEach(function (b, i) { tl.fromTo(b, { width: '0%' }, { width: b.dataset.w + '%', duration: .9, ease: 'power2.out' }, 't34+=' + (1.4 + i * .07).toFixed(2)); });
+
+        /* ================= SCREEN 4 — Chart Checklist ================= */
+        tl.addLabel('s4', 't34+=2.3');
+        tl.addLabel('s4hl', 's4');
+        dim('4', 's4hl'); lift(flag, 's4hl', 1.03);
+        tl.fromTo($$('.na-flag .st .w'), { opacity: 1 }, { opacity: .45, duration: .45, repeat: 1, yoyo: true, ease: 'sine.inOut', stagger: .1 }, 's4hl+=.5');
+
+        var endAt;
+        if (RESOLVE_ENDING) {
+            fRows.forEach(function (r, i) {
+                var at = 's4hl+=' + (1.5 + i * .4).toFixed(2);
+                tl.to(r.querySelector('.ic-a'), { autoAlpha: 0, scale: .6, duration: .2 }, at);
+                tl.fromTo(r.querySelector('.ic-b'), { autoAlpha: 0, scale: .4 }, { autoAlpha: 1, scale: 1, duration: .45, ease: 'back.out(2.2)' }, at);
+                tl.to(r.querySelector('.st .w'), { autoAlpha: 0, y: -6, duration: .25 }, at);
+                tl.fromTo(r.querySelector('.st .g'), { autoAlpha: 0, y: 6 }, { autoAlpha: 1, y: 0, duration: .35 }, at + '+=.1');
+                tl.to(r.querySelector('.lk .a'), { autoAlpha: 0, duration: .2 }, at);
+                tl.fromTo(r.querySelector('.lk .b'), { autoAlpha: 0 }, { autoAlpha: 1, duration: .3 }, at + '+=.1');
+            });
+            drop(flag, 's4hl+=3.0'); undim('4', 's4hl+=3.0');
+            tl.to($('.na-bd-a'), { autoAlpha: 0, duration: .3 }, 's4hl+=3.3');
+            tl.fromTo($('.na-bd-b'), { autoAlpha: 0, scale: .9 }, { autoAlpha: 1, scale: 1, duration: .45, ease: 'back.out(2)' }, 's4hl+=3.35');
+            tl.to(ringArc, { strokeDashoffset: C * (1 - .35), duration: 1, ease: 'power2.inOut' }, 's4hl+=3.3');
+            counter(ringPct, 35, 's4hl+=3.3', 1, function (v) { return Math.round(v) + '%'; }, 27);
+            tl.to($('.na-rt-a'), { autoAlpha: 0, y: -6, duration: .3 }, 's4hl+=3.4');
+            tl.fromTo($('.na-rt-b'), { autoAlpha: 0, y: 6 }, { autoAlpha: 1, y: 0, duration: .4 }, 's4hl+=3.5');
+            tl.to(admBar, { width: '100%', backgroundColor: '#07BE9F', duration: 1, ease: 'power2.inOut' }, 's4hl+=3.3');
+            endAt = 's4hl+=5.0';
+        } else {
+            drop(flag, 's4hl+=2.4'); undim('4', 's4hl+=2.4');
+            endAt = 's4hl+=2.9';
+        }
+
+        /* ================= 4 → 1 (loop) ================= */
+        tl.addLabel('t41', endAt);
+        outUp([tabs, chk, nextCard, ov], 't41', { s: .05 });
+        outUp([crumb, phead, ppan], 't41+=.2', { s: .05 });
+        tl.to(side, { width: 250, duration: .8, ease: EASE_MOVE }, 't41+=.45');
+        tl.to(sideSec, { height: 26, marginBottom: 4, duration: .8, ease: EASE_MOVE }, 't41+=.45');
+        tl.to(main, { left: 250, duration: .8, ease: EASE_MOVE }, 't41+=.45');
+        tl.to(sidePill, { top: 10, width: 230, duration: .8, ease: EASE_MOVE }, 't41+=.45');
+        tl.to($$('#naNavPts, #naNavPts svg'), { color: '#1E293C', duration: .3 }, 't41+=.5');
+        tl.to($$('#naNavPts svg'), { color: '#64748B', duration: .3 }, 't41+=.5');
+        tl.to($$('#naNavDash, #naNavDash svg'), { color: '#FFFFFF', duration: .3 }, 't41+=.9');
+        tl.to(sideLbls, { autoAlpha: 1, duration: .35, stagger: .03 }, 't41+=.95');
+        tl.to({}, { duration: .35 }, 't41+=1.3');   // breath before the loop restarts
+
+        /* ================= PHOTOS ================= */
+        // one photo per screen, each in its own spot (positions live in the CSS: .na-photo.p1 … .p4)
+        var L = tl.labels, ph = [1, 2, 3, 4].map(function (n) { return $('.na-photo.p' + n); });
+        function photo(card, inAt, outAt) {
+            var img = card.querySelector('img');
+            tl.fromTo(card, { autoAlpha: 0, y: 36, scale: .95 }, { autoAlpha: 1, y: 0, scale: 1, duration: 1, ease: 'power3.out' }, inAt);
+            tl.fromTo(img, { scale: 1.08 }, { scale: 1, duration: Math.max(1, outAt - inAt + .5), ease: 'none' }, inAt);
+            tl.to(card, { autoAlpha: 0, y: -14, scale: .98, duration: .5, ease: 'power2.in' }, outAt);
+        }
+        photo(ph[0], .35, L.t12);
+        photo(ph[1], L.t12 + 1.0, L.t23);
+        photo(ph[2], L.t23 + .8, L.t34);
+        photo(ph[3], L.t34 + 1.1, L.t41);
+
+        /* ---- playback: play only while on screen; respect reduced motion ---- */
+        var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (reduce) {
+            tl.pause(); tl.seek('s3+=.01', false);
+        } else if ('IntersectionObserver' in window) {
+            (root._io = new IntersectionObserver(function (es) {
+                es.forEach(function (e) { if (e.isIntersecting) { if (!root._userPaused) tl.play(); } else { tl.pause(); } });
+            }, { threshold: .3 })).observe(root);
+        } else { tl.play(); }
+
+        root._niq = tl;
+    }
+
+
+    /* ---- mount + boot ---- */
+    function mount(el) {
+        if (el.getAttribute('data-niq-mounted')) return;
+        el.setAttribute('data-niq-mounted', '1');
+        el.classList.add('niq-anim');
+        el.setAttribute('role', 'img');
+        el.setAttribute('aria-label', NIQ_HERO_LABEL);
+        el.innerHTML = NIQ_HERO_MARKUP;
+        niqInit(el);
+    }
+    /* ---- shared registry: mounts on page load AND whenever new mounts appear
+       (Barba / any AJAX page swap), and cleans up mounts that get removed ---- */
+    var NIQ = window.NIQAnims || (window.NIQAnims = (function () {
+        var reg = [], watching = false;
+        var OWN = /\b(niq-(anim|at|gc|ii|lt|ot)|(na|at|gc|ii|lt|ot)-ready)\b/g;
+        function each(scope, sel, fn) {
+            if (!scope) return;
+            if (scope.nodeType === 1 && scope.matches(sel)) fn(scope);
+            if (scope.querySelectorAll) Array.prototype.forEach.call(scope.querySelectorAll(sel), fn);
+        }
+        function destroyEl(el) {
+            try { if (el._niq && el._niq.kill) el._niq.kill(); } catch (e) { }
+            ['_loop', '_dots'].forEach(function (k) { try { if (el[k] && el[k].stop) el[k].stop(); } catch (e) { } });
+            try { if (el._io) el._io.disconnect(); } catch (e) { }
+            try { if (el._ro) el._ro.disconnect(); } catch (e) { }
+            el._niq = el._loop = el._dots = el._io = el._ro = null;
+            el.removeAttribute('data-niq-mounted'); el.removeAttribute('role'); el.removeAttribute('aria-label');
+            el.className = el.className.replace(OWN, '').replace(/\s+/g, ' ').trim();
+            el.innerHTML = '';
+        }
+        var api = {
+            register: function (sel, mountFn) {
+                for (var i = 0; i < reg.length; i++) if (reg[i].sel === sel) return;
+                reg.push({ sel: sel, mount: mountFn });
+            },
+            mount: function (scope) { scope = scope || document; reg.forEach(function (r) { each(scope, r.sel, r.mount); }); },
+            destroy: function (scope) { scope = scope || document; each(scope, '[data-niq-mounted]', destroyEl); },
+            watch: function () {
+                if (watching || !('MutationObserver' in window)) return;
+                watching = true;
+                new MutationObserver(function (muts) {
+                    muts.forEach(function (m) {
+                        Array.prototype.forEach.call(m.removedNodes, function (n) { if (n.nodeType === 1 && !n.isConnected) api.destroy(n); });
+                        Array.prototype.forEach.call(m.addedNodes, function (n) { if (n.nodeType === 1) api.mount(n); });
+                    });
+                }).observe(document.documentElement, { childList: true, subtree: true });
+            }
+        };
+        return api;
+    })());
+    function boot() { NIQ.register('[data-niq-anim="hero"]', mount); NIQ.mount(document); NIQ.watch(); }
+    function go() {
+        if (window.gsap) { boot(); return; }
+        var existing = document.querySelector('script[data-niq-gsap]');
+        if (existing) { existing.addEventListener('load', boot); return; }
+        var sc = document.createElement('script');
+        sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js';
+        sc.setAttribute('data-niq-gsap', '1');
+        sc.onload = boot; document.head.appendChild(sc);
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go();
+})();

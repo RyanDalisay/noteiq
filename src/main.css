@@ -1,0 +1,43 @@
+/* Optional to show tiles in a row in the Webflow Designer */
+:is(.wf-design-mode, .wf-editor) [data-orbit-tiles-list] {
+    display: flex;
+}
+
+/* Fixed Underlay Nav */
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+:root {
+    --menu-width: 30em;
+}
+
+@media screen and (max-width: 767px) {
+    :root {
+        --menu-width: 80vw;
+    }
+}
+
+.wf-design-mode :where([data-menu-status="open"]) {
+
+    .main-overlay {
+        visibility: visible;
+        pointer-events: auto;
+    }
+
+    .main-overlay__dark {
+        opacity: 1;
+    }
+
+    .underlay-nav__toggle {
+        color: #312e2e;
+    }
+
+    [data-main],
+    [data-underlay-nav-overlay] {
+        transform: translateX(calc(var(--menu-width) * -1));
+        visibility: visible;
+    }
+
+}

@@ -1,0 +1,1 @@
+.progress-nav__indicator{transition:all 1.2s cubic-bezier(.16,1,.3,1)}.progress-nav__btn-text{transition:transform .6s cubic-bezier(.16,1,.3,1);transform:translateY(0) rotate(.001deg)}.progress-nav__btn:hover .progress-nav__btn-text,.progress-nav__contact-btn:hover .progress-nav__btn-text{transform:translateY(-100%) rotate(.001deg)}
