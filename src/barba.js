@@ -171,16 +171,19 @@ function runPageEnterAnimation(next) {
 // BARBA HOOKS + INIT
 // -----------------------------------------
 
-// Webflow ships some pages' interactions (IX2) in a page-specific JS bundle
-// (e.g. /home-2's sticky tabs). A Barba swap never loads that bundle, so those
-// interactions can't run. If the next page needs different Webflow scripts than
-// the ones loaded, do a normal page load instead of a Barba transition.
+// Webflow ships a page's element interactions (IX2) in a page-specific JS bundle,
+// which a Barba swap never loads. If the next page has elements with Webflow
+// interactions (data-w-id) and needs different Webflow scripts than the ones
+// loaded, do a normal page load instead of a Barba transition. (A page can load
+// different scripts without using them, e.g. /home-2 still ships leftover
+// interactions for deleted elements; that page doesn't need a reload.)
 const webflowScriptsOf = (doc) =>
     [...doc.querySelectorAll('script[src*="/js/webflow."]')].map(s => s.getAttribute("src")).sort().join(" ");
 const loadedWebflowScripts = webflowScriptsOf(document);
 
 barba.hooks.before(data => {
     const nextDoc = new DOMParser().parseFromString(data.next.html, "text/html");
+    if (!nextDoc.querySelector("[data-w-id]")) return;
     if (webflowScriptsOf(nextDoc) === loadedWebflowScripts) return;
 
     window.location.assign(data.next.url.href);
