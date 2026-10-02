@@ -28,6 +28,7 @@ const JS = [
   "animations/interface.js",
   "animations/threads.js",
   "animations/thread-bg.js",
+  "animations/audit.js",
 ];
 
 const CSS = [
@@ -43,6 +44,7 @@ const CSS = [
   "animations/interface.css",
   "animations/threads.css",
   "animations/thread-bg.css",
+  "animations/audit.css",
 ];
 
 // The JS files are concatenated into one scope before bundling (as Odyn did),

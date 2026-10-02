@@ -1,0 +1,312 @@
+/* =====================================================================
+   NoteIQ — Compliance & Security animation (styles)
+   Mount: any element with  data-niq-anim="audit"  (audit.js fills it in)
+   All classes are prefixed au- and scoped under .niq-au, no Lumos overrides.
+   Nothing here animates the mount element itself, so Webflow interactions on
+   the mount (opacity / move / scale) keep working.
+   ===================================================================== */
+
+/* reserve the 1:1 space before the script runs, so the layout doesn't jump */
+[data-niq-anim="audit"] {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1/1;
+}
+
+.niq-au .au-wrap {
+    position:relative;
+    width:100%;
+    aspect-ratio:1/1;
+    overflow:hidden;
+    border-radius:inherit;
+    background:radial-gradient(120% 100% at 0% 0%,#F7F5FF 0%,#E4DDFB 40%,#B3A2EE 100%);
+    font-family:'Plus Jakarta Sans',system-ui,sans-serif;
+    color:#1E293C;
+    -webkit-font-smoothing:antialiased;
+}
+
+.niq-au .au-stage {
+    position:absolute;
+    left:0;
+    top:0;
+    width:1000px;
+    height:1000px;
+    transform-origin:0 0;
+}
+
+.niq-au .au-stage * {
+    box-sizing:border-box;
+    margin:0;
+}
+
+.niq-au .au-fx {
+    position:absolute;
+    inset:0;
+    width:1000px;
+    height:1000px;
+}
+
+.niq-au .au-card {
+    position:absolute;
+    background:#fff;
+    border-radius:20px;
+    box-shadow:0 30px 60px -24px rgba(61,39,145,.35),0 0 0 1px rgba(30,41,60,.06);
+}
+
+.niq-au .au-note {
+    left:44px;
+    top:170px;
+    width:592px;
+    padding:40px 42px 38px;
+}
+
+.niq-au .au-hd {
+    display:flex;
+    align-items:center;
+    gap:20px;
+    margin-bottom:26px;
+}
+
+.niq-au .au-state {
+    margin-left:auto;
+    position:relative;
+    width:150px;
+    height:46px;
+}
+
+.niq-au .au-state span {
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    border-radius:100px;
+    font-size:21px;
+    font-weight:600;
+}
+
+.niq-au .au-draft {
+    background:#F1F3F9;
+    color:#64748B;
+}
+
+.niq-au .au-lock {
+    background:#3D2791;
+    color:#fff;
+    opacity:0;
+}
+
+.niq-au .au-av {
+    width:68px;
+    height:68px;
+    border-radius:50%;
+    background:#516FA2;
+    color:#fff;
+    font-weight:700;
+    font-size:26px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.niq-au .au-name {
+    font-size:34px;
+    font-weight:700;
+    letter-spacing:-.01em;
+}
+
+.niq-au .au-meta {
+    font-size:23px;
+    color:#64748B;
+    margin-top:2px;
+}
+
+.niq-au .au-row {
+    position:relative;
+    display:grid;
+    grid-template-columns:1fr auto;
+    grid-template-rows:auto auto;
+    column-gap:16px;
+    padding:18px 18px;
+    margin:0 -18px;
+    border-radius:14px;
+    border-top:1.5px solid #E2E8F0;
+}
+
+.niq-au .au-row.au-on {
+    background:#F5F3FF;
+}
+
+.niq-au .au-lab {
+    font-size:27px;
+    font-weight:600;
+}
+
+.niq-au .au-val {
+    grid-column:1;
+    font-size:23px;
+    color:#516FA2;
+    margin-top:4px;
+    white-space:nowrap;
+    clip-path:inset(0 100% 0 0);
+}
+
+.niq-au .au-pill {
+    grid-column:2;
+    grid-row:1/3;
+    align-self:center;
+    position:relative;
+    height:44px;
+    width:158px;
+}
+
+.niq-au .au-pill span {
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:100px;
+    font-size:21px;
+    font-weight:600;
+}
+
+.niq-au .au-req {
+    background:#FDF6E3;
+    color:#92400E;
+}
+
+.niq-au .au-done {
+    background:#ECFDF8;
+    color:#066051;
+    opacity:0;
+}
+
+.niq-au .au-sign {
+    position:relative;
+    border-top:1.5px solid #E2E8F0;
+    padding-top:20px;
+    margin-top:2px;
+}
+
+.niq-au .au-siglab {
+    font-size:22px;
+    color:#64748B;
+}
+
+.niq-au .au-sigline {
+    height:62px;
+    border-bottom:2px dashed #C6CDD8;
+    display:flex;
+    align-items:flex-end;
+    padding-bottom:6px;
+}
+
+.niq-au .au-sig {
+    font-family:'Lora',Georgia,serif;
+    font-style:italic;
+    font-size:38px;
+    color:#3D2791;
+    clip-path:inset(0 100% 0 0);
+}
+
+.niq-au .au-ready {
+    left:620px;
+    top:56px;
+    width:336px;
+    padding:24px 26px;
+    display:flex;
+    align-items:center;
+    gap:22px;
+}
+
+.niq-au .au-ring {
+    width:124px;
+    height:124px;
+    transform:rotate(-90deg);
+    display:block;
+    flex:none;
+}
+
+.niq-au .au-ring circle {
+    fill:none;
+    stroke-width:12;
+}
+
+.niq-au .au-track {
+    stroke:#EDE9FE;
+}
+
+.niq-au .au-prog {
+    stroke:#5D3FD3;
+    stroke-linecap:round;
+    stroke-dasharray:314.16;
+    stroke-dashoffset:314.16;
+}
+
+.niq-au .au-pct {
+    font-size:44px;
+    font-weight:700;
+    letter-spacing:-.02em;
+    line-height:1;
+}
+
+.niq-au .au-rlab {
+    font-size:22px;
+    color:#64748B;
+    margin-top:6px;
+}
+
+.niq-au .au-badge {
+    margin-top:10px;
+    width:max-content;
+    background:#ECFDF8;
+    color:#066051;
+    font-size:20px;
+    font-weight:600;
+    padding:7px 16px;
+    border-radius:100px;
+    opacity:0;
+}
+
+.niq-au .au-audit {
+    left:620px;
+    top:286px;
+    width:336px;
+    height:656px;
+    padding:28px 28px;
+    overflow:hidden;
+}
+
+.niq-au .au-atitle {
+    display:flex;
+    align-items:center;
+    gap:12px;
+    font-size:26px;
+    font-weight:700;
+    margin-bottom:12px;
+}
+
+.niq-au .au-ent {
+    overflow:hidden;
+    border-left:3px solid #C7BDF2;
+    padding:0 0 0 16px;
+}
+
+.niq-au .au-ent>div:first-child {
+    padding-top:12px;
+}
+
+.niq-au .au-et {
+    font-size:22px;
+    font-weight:600;
+}
+
+.niq-au .au-em {
+    font-family:'Roboto Mono',ui-monospace,monospace;
+    font-size:18px;
+    color:#64748B;
+    margin-top:3px;
+    padding-bottom:10px;
+}

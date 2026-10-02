@@ -143,7 +143,7 @@
        (Barba / any AJAX page swap), and cleans up mounts that get removed ---- */
     var NIQ = window.NIQAnims || (window.NIQAnims = (function () {
         var reg = [], watching = false;
-        var OWN = /\b(niq-(anim|at|gc|ii|lt|ot)|(na|at|gc|ii|lt|ot)-ready)\b/g;
+        var OWN = /\b(niq-(anim|at|gc|ii|lt|ot|au)|(na|at|gc|ii|lt|ot|au)-ready)\b/g;
         function each(scope, sel, fn) {
             if (!scope) return;
             if (scope.nodeType === 1 && scope.matches(sel)) fn(scope);
