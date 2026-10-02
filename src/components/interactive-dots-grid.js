@@ -12,11 +12,11 @@ function initInteractiveDotsGridBackground(scope = document) {
   if (!elements.length) return;
 
   const gap = '1em';
-  const dotSize = '0.09375em'; // 1.5px at a 16px font size
+  const dotSize = '0.078125em'; // 1.25px at a 16px font size
   const shape = 'circle'; // 'circle' or 'square'
-  const dotColorInactive = 'var(--swatch--brand-400)';
-  const dotColorActive = 'var(--swatch--brand-400)';
-  const dotMaxScale = 3.5 / 1.5; // hovered dot: 0.21875em (3.5px at 16px)
+  const dotColorInactive = 'var(--swatch--brand-300)';
+  const dotColorActive = 'var(--swatch--brand-300)';
+  const dotMaxScale = 3.5 / 1.25; // hovered dot: 0.21875em (3.5px at 16px)
   const pressScale = 1.5;
   const hoverRadius = 12;
   const easeDuration = 0.5;
