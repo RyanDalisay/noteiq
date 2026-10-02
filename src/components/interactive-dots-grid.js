@@ -14,7 +14,7 @@ function initInteractiveDotsGridBackground(scope = document) {
   const gap = '1em';
   const dotSize = '0.125em';
   const shape = 'circle'; // 'circle' or 'square'
-  const dotColorInactive = 'rgba(0, 0, 0, 0.2)';
+  const dotColorInactive = 'var(--swatch--morning-slate-brand-500)';
   const dotColorActive = 'rgba(0, 0, 0, 0.75)';
   const dotMaxScale = 1.75;
   const pressScale = 1.5;
@@ -27,7 +27,7 @@ function initInteractiveDotsGridBackground(scope = document) {
   const press = { value: 0, from: 0, to: 0, start: 0 };
   const canvases = [];
 
-  let dpr, size, spacing, radius, raf, destroyed = false, lastTime = performance.now();
+  let dpr, size, spacing, radius, raf, scrollRaf, destroyed = false, lastTime = performance.now();
 
   function toPx(value, element) {
     const probe = document.createElement('div');
@@ -94,20 +94,23 @@ function initInteractiveDotsGridBackground(scope = document) {
     });
   }
 
-  function render(state, origin) {
+  // The grid is anchored to the viewport, not the section, so the dots stay
+  // fixed in the background while the section scrolls over them.
+  function render(state) {
     const rect = state.element.getBoundingClientRect();
-    const left = rect.left - origin.left;
-    const top = rect.top - origin.top;
-    const px = pointer.cx - origin.left;
-    const py = pointer.cy - origin.top;
+    const left = rect.left;
+    const top = rect.top;
+    const px = pointer.cx;
+    const py = pointer.cy;
     const maxScale = dotMaxScale * (1 + (pressScale - 1) * press.value);
 
     state.ctx.clearRect(0, 0, state.width, state.height);
 
-    const colStart = Math.floor(left / spacing);
-    const colEnd = Math.ceil((left + state.width) / spacing);
-    const rowStart = Math.floor(top / spacing);
-    const rowEnd = Math.ceil((top + state.height) / spacing);
+    // Only draw the part of the section that is on screen
+    const colStart = Math.floor(Math.max(left, 0) / spacing);
+    const colEnd = Math.ceil(Math.min(left + state.width, innerWidth) / spacing);
+    const rowStart = Math.floor(Math.max(top, 0) / spacing);
+    const rowEnd = Math.ceil(Math.min(top + state.height, innerHeight) / spacing);
 
     for (let row = rowStart; row <= rowEnd; row++) {
       const gy = row * spacing;
@@ -133,8 +136,7 @@ function initInteractiveDotsGridBackground(scope = document) {
   }
 
   function renderAll(visibleOnly = false) {
-    const origin = elements[0].getBoundingClientRect();
-    canvases.forEach(state => (!visibleOnly || state.visible) && render(state, origin));
+    canvases.forEach(state => (!visibleOnly || state.visible) && render(state));
   }
 
   function tick(time) {
@@ -207,6 +209,16 @@ function initInteractiveDotsGridBackground(scope = document) {
     start();
   }
 
+  // Redraw on scroll so the dots stay put (at most once per frame; the hover
+  // loop already redraws every frame while it runs)
+  function onScroll() {
+    if (destroyed || raf || scrollRaf || !canvases.some(state => state.visible)) return;
+    scrollRaf = requestAnimationFrame(() => {
+      scrollRaf = null;
+      renderAll(true);
+    });
+  }
+
   const onPointerDown = () => pointer.active && setEase(press, 1);
   const onPointerUp = () => setEase(press, 0);
 
@@ -232,6 +244,7 @@ function initInteractiveDotsGridBackground(scope = document) {
     resizeObserver.observe(element);
   });
 
+  window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', resize);
   resize();
 
@@ -240,11 +253,13 @@ function initInteractiveDotsGridBackground(scope = document) {
     destroy() {
       destroyed = true;
       if (raf) cancelAnimationFrame(raf);
-      raf = null;
+      if (scrollRaf) cancelAnimationFrame(scrollRaf);
+      raf = scrollRaf = null;
 
       window.removeEventListener('pointermove', onPointerMove);
       window.removeEventListener('pointerdown', onPointerDown);
       window.removeEventListener('pointerup', onPointerUp);
+      window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', resize);
       intersectionObserver.disconnect();
       resizeObserver.disconnect();
