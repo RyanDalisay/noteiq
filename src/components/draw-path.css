@@ -1,0 +1,26 @@
+/* Draw path (Features page card connectors) — see draw-path.js. Classes prefixed dp-. */
+
+.dp-svg {
+    position: absolute;
+    left: 0;
+    top: 0;
+    overflow: visible;
+    pointer-events: none;
+}
+
+.dp-line,
+.dp-glow {
+    fill: none;
+    stroke-dasharray: 1;
+    stroke-linecap: butt;
+}
+
+.dp-line {
+    stroke-width: 2px;
+}
+
+/* Subtle glow: a wider, blurred copy of the line behind it */
+.dp-glow {
+    stroke-width: 6px;
+    opacity: 0.55;
+}
