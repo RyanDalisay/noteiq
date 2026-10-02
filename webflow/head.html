@@ -1,17 +1,17 @@
 <!-- NoteIQ custom code: head.
      Paste into Webflow: Site settings > Custom code > Head code ("Inside <head> tag").
-     - Page transitions: cross-document View Transitions (cross-fade between pages,
-       nav stays put, off for reduced motion). Inline so they apply before first paint.
+     - Page transitions: cross-document View Transitions (the browser's default
+       cross-fade between pages, nav stays put, off for reduced motion). Inline so they
+       apply before first paint.
      - Speculation rules: prerender same-site pages on hover, so navigation is instant.
      - Picks the staging/production host, stores it on window.__niqBase for footer.html,
-       and loads bundle.css. -->
+       and loads bundle.css (render-blocking, so pages never paint unstyled). -->
 <style>
   @view-transition { navigation: auto; }
 
-  ::view-transition-old(root) { animation: niq-page-out 0.5s cubic-bezier(0.55, 0.085, 0.68, 0.53) both; }
-  ::view-transition-new(root) { animation: niq-page-in 0.75s cubic-bezier(0.455, 0.03, 0.515, 0.955) both; }
-  @keyframes niq-page-out { to { opacity: 0; } }
-  @keyframes niq-page-in { from { opacity: 0; } }
+  /* The browser's default page cross-fade (0.25s, matched in and out) is used on
+     purpose: mismatched in/out timings made the page wash out and the two pages
+     overlap for longer, which read as a flicker. */
 
   /* Keep the nav steady between pages instead of cross-fading it */
   .nav_component { view-transition-name: niq-nav; }
@@ -43,6 +43,7 @@
 
     var css = document.createElement("link");
     css.rel = "stylesheet";
+    css.setAttribute("blocking", "render"); // hold the first paint until our styles arrive (no unstyled flash)
     css.href = base + "/bundle.css";
     document.head.appendChild(css);
   })();
