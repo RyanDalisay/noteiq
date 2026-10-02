@@ -1,8 +1,8 @@
 // -----------------------------------------
 // DRAW PATH (Features page card connectors)
-// Short connectors from the bottom of each card to the top of the next: a 1px
-// gradient wave that moves continuously and draws in as you scroll, with a pulsing
-// glow, both matching the Features hero thread. The card crossing the middle of the
+// Short connectors from the bottom of each card to the top of the next: two 1px
+// gradient waves braiding around each other, moving continuously and drawing in as
+// you scroll, with a pulsing glow, matching the Features hero thread. The card crossing the middle of the
 // screen fades its outline to its own colour.
 //
 // Webflow setup:
@@ -91,9 +91,9 @@ function initDrawPath(scope = document) {
 
         // Wave + glow, matching the Features hero thread (thread-bg.js): the hero's
         // wave is 280 x 18.75 units on a 1920-wide artwork, moving at 2π/3.4 rad/s,
-        // and its glow is a soft coloured haze that pulses every 3.2s plus a faint
-        // tint filling the wave's curves. Sizes scale with the card width the same
-        // way the hero scales with its own width.
+        // and its glow is a soft coloured haze that pulses every 3.2s. Like the hero's
+        // braid, each connector has two waves offset like two of the hero's threads, so they cross.
+        // Sizes scale with the card width the same way the hero scales with its own width.
         const WAVE = { length: 280, amp: 18.75, art: 1920, speed: 2 * Math.PI / 3.4 };
         const GLOW = { min: 0.45, max: 1, period: 3.2 };
 
@@ -109,15 +109,16 @@ function initDrawPath(scope = document) {
                 el("stop", { offset: "1", "stop-color": color, "stop-opacity": "0" }, rg);
                 return rg;
             });
-            // Reveal the tint along with the line as it draws
-            const clip = el("clipPath", { id: `${uid}-c${i}` }, defs);
-            const clipRect = el("rect", {}, clip);
 
             const g = el("g", { class: "dp-connector" }, svg);
             const hazeEls = hazes.map(rg => el("ellipse", { class: "dp-haze", fill: `url(#${rg.id})` }, g));
-            const tint = el("path", { class: "dp-tint", fill: `url(#${grad.id})`, "clip-path": `url(#${clip.id})` }, g);
-            const line = el("path", { class: "dp-line", pathLength: "1", stroke: `url(#${grad.id})` }, g);
-            return { grad, hazeEls, clipRect, tint, line, x: 0, top: 0, bottom: 0, scale: 1, st: null };
+            // Same offset as two of the hero's threads (peaks 118 units apart on a 280 wavelength)
+            const lines = [0, 2 * Math.PI * 118 / 280].map(phase => {
+                const line = el("path", { class: "dp-line", pathLength: "1", stroke: `url(#${grad.id})` }, g);
+                line._phase = phase;
+                return line;
+            });
+            return { grad, hazeEls, lines, x: 0, top: 0, bottom: 0, scale: 1, st: null };
         });
 
         wrap.appendChild(svg);
@@ -125,12 +126,12 @@ function initDrawPath(scope = document) {
         // The wave at time t: tapers to the centre line at both ends so it still
         // meets each card's edge in the middle
         function smooth(e0, e1, v) { const k = Math.min(1, Math.max(0, (v - e0) / (e1 - e0))); return k * k * (3 - 2 * k); }
-        function wavePoints(c, t) {
+        function wavePoints(c, t, phase) {
             const len = c.bottom - c.top, amp = WAVE.amp * c.scale, wl = WAVE.length * c.scale, ease = Math.min(40, len / 3);
             const pts = [];
             for (let y = c.top; y <= c.bottom + 0.1; y += 4) {
                 const env = smooth(c.top, c.top + ease, y) * (1 - smooth(c.bottom - ease, c.bottom, y));
-                const x = c.x + amp * env * Math.sin(2 * Math.PI * (y - c.top) / wl - t * WAVE.speed);
+                const x = c.x + amp * env * Math.sin(2 * Math.PI * (y - c.top) / wl - t * WAVE.speed + phase);
                 pts.push(x.toFixed(1) + " " + Math.min(y, c.bottom).toFixed(1));
             }
             return pts;
@@ -141,11 +142,8 @@ function initDrawPath(scope = document) {
             const viewTop = window.scrollY - wrapTop(), viewBottom = viewTop + window.innerHeight;
             connectors.forEach((c) => {
                 if (!all && (c.bottom < viewTop - 200 || c.top > viewBottom + 200)) return; // off screen: skip
-                const pts = wavePoints(c, t);
-                c.line.setAttribute("d", "M" + pts.join("L"));
-                c.tint.setAttribute("d", "M" + pts.join("L") + `L${c.x.toFixed(1)} ${c.bottom.toFixed(1)}L${c.x.toFixed(1)} ${c.top.toFixed(1)}Z`);
+                c.lines.forEach(line => line.setAttribute("d", "M" + wavePoints(c, t, line._phase).join("L")));
                 const progress = c.st ? c.st.progress : 1;
-                c.clipRect.setAttribute("height", Math.max(0, (c.bottom - c.top) * progress + 2));
                 c.hazeEls.forEach(h => h.setAttribute("opacity", (pulse * progress).toFixed(3)));
             });
         }
@@ -171,8 +169,6 @@ function initDrawPath(scope = document) {
                     h.setAttribute("cx", c.x); h.setAttribute("cy", c.top + len * (k ? 0.7 : 0.3));
                     h.setAttribute("rx", spread); h.setAttribute("ry", len * 0.55);
                 });
-                c.clipRect.setAttribute("x", c.x - spread); c.clipRect.setAttribute("y", c.top);
-                c.clipRect.setAttribute("width", spread * 2);
             });
             draw(clock, true); // every connector, so off-screen ones (and reduced motion) have a shape
         }
@@ -186,9 +182,9 @@ function initDrawPath(scope = document) {
         connectors.forEach((c) => {
             // Tweened as an attribute: GSAP rounds px CSS values, and with pathLength=1
             // that would make the line pop in instead of drawing
-            if (reduceMotion) { gsap.set(c.line, { attr: { "stroke-dashoffset": 0 } }); return; }
-            gsap.set(c.line, { attr: { "stroke-dashoffset": 1 } });
-            const tween = gsap.to(c.line, {
+            if (reduceMotion) { gsap.set(c.lines, { attr: { "stroke-dashoffset": 0 } }); return; }
+            gsap.set(c.lines, { attr: { "stroke-dashoffset": 1 } });
+            const tween = gsap.to(c.lines, {
                 attr: { "stroke-dashoffset": 0 },
                 ease: "none",
                 duration: 1,
@@ -256,7 +252,7 @@ function initDrawPath(scope = document) {
                 io.disconnect();
                 resizeObserver.disconnect();
                 triggers.forEach(t => t && t.kill());
-                connectors.forEach(c => gsap.killTweensOf(c.line));
+                connectors.forEach(c => gsap.killTweensOf(c.lines));
                 cards.forEach(card => { gsap.killTweensOf(card); gsap.set(card, { clearProps: "borderColor" }); });
                 svg.remove();
                 if (setPosition) wrap.style.position = "";

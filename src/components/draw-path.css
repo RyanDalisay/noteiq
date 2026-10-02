@@ -9,15 +9,10 @@
     pointer-events: none;
 }
 
-/* The wave: 1px, drawn in on scroll via stroke-dashoffset (pathLength = 1) */
+/* The waves: 1px, drawn in on scroll via stroke-dashoffset (pathLength = 1) */
 .dp-line {
     fill: none;
     stroke-width: 1px;
     stroke-dasharray: 1;
     stroke-linecap: butt;
-}
-
-/* Faint tint filling the wave's curves, like the coloured fills between the hero's threads */
-.dp-tint {
-    opacity: 0.15;
 }
