@@ -1,7 +1,7 @@
 gsap.registerPlugin(Observer, ScrollTrigger);
 
 // -----------------------------------------
-// DRAGGABLE MARQUEE (Barba-aware)
+// DRAGGABLE MARQUEE
 // initDraggableMarquee(scope)    → sets up every marquee inside `scope` (default: whole page)
 // destroyDraggableMarquee(scope) → tears down every marquee inside `scope`
 // -----------------------------------------
@@ -131,7 +131,7 @@ function destroyDraggableMarquee(scope = document) {
     }
 }
 
-// First page load. After that, barba.js sets up / tears down marquees on each page change.
+// Runs once per page load (scope/teardown functions above are available if ever needed).
 // Wrapped so the DOMContentLoaded event isn't passed in as `scope`.
 const bootDraggableMarquee = () => initDraggableMarquee();
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bootDraggableMarquee); else bootDraggableMarquee();

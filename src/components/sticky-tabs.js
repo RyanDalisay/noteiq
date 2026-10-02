@@ -1,5 +1,5 @@
 // -----------------------------------------
-// STICKY TABS (Barba-aware) — replaces the Webflow IX2 "Layout 350 image N"
+// STICKY TABS — replaces the Webflow IX2 "Layout 350 image N"
 // interactions on the feature sticky tabs (/home-2).
 // Each .feature-sticky-tabs_content block shows the matching panel (the Nth child
 // of .feature-sticky-tabs_desktop-image-wrapper) while it crosses the middle of
@@ -77,7 +77,7 @@ function destroyStickyTabs(scope = document) {
     }
 }
 
-// First page load. After that, barba.js sets up / tears down sticky tabs on each page change.
+// Runs once per page load (scope/teardown functions above are available if ever needed).
 // Wrapped so the DOMContentLoaded event isn't passed in as `scope`.
 const bootStickyTabs = () => initStickyTabs();
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bootStickyTabs); else bootStickyTabs();

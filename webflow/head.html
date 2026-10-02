@@ -1,7 +1,38 @@
 <!-- NoteIQ custom code: head.
      Paste into Webflow: Site settings > Custom code > Head code ("Inside <head> tag").
-     Picks the staging/production host, stores it on window.__niqBase for footer.html,
-     and loads bundle.css. -->
+     - Page transitions: cross-document View Transitions (cross-fade between pages,
+       nav stays put, off for reduced motion). Inline so they apply before first paint.
+     - Speculation rules: prerender same-site pages on hover, so navigation is instant.
+     - Picks the staging/production host, stores it on window.__niqBase for footer.html,
+       and loads bundle.css. -->
+<style>
+  @view-transition { navigation: auto; }
+
+  ::view-transition-old(root) { animation: niq-page-out 0.5s cubic-bezier(0.55, 0.085, 0.68, 0.53) both; }
+  ::view-transition-new(root) { animation: niq-page-in 0.75s cubic-bezier(0.455, 0.03, 0.515, 0.955) both; }
+  @keyframes niq-page-out { to { opacity: 0; } }
+  @keyframes niq-page-in { from { opacity: 0; } }
+
+  /* Keep the nav steady between pages instead of cross-fading it */
+  .nav_component { view-transition-name: niq-nav; }
+  ::view-transition-old(niq-nav) { display: none; }
+  ::view-transition-new(niq-nav) { animation: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    @view-transition { navigation: none; }
+  }
+</style>
+<script type="speculationrules">
+  {
+    "prerender": [{
+      "where": { "and": [
+        { "href_matches": "/*" },
+        { "not": { "selector_matches": "[target=_blank], [data-no-prerender]" } }
+      ] },
+      "eagerness": "moderate"
+    }]
+  }
+</script>
 <link rel="preconnect" href="https://staging-noteiq.ryan-200.workers.dev">
 <link rel="preconnect" href="https://noteiq.ryan-200.workers.dev">
 <script>

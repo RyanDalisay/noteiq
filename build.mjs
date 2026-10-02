@@ -8,9 +8,9 @@ import path from "node:path";
 const SRC = path.resolve("src");
 const OUT = path.resolve("dist");
 
-// Load order (matches the Odyn v7 bundle, except barba.js is last because it
-// calls functions defined in the other files, e.g. initDraggableMarquee).
+// Load order: site.js first (GSAP defaults + Lenis), then the Odyn v7 order.
 const JS = [
+  "site.js",
   "main.js",
   "components/gradientwavetext.js",
   "components/tabsystemautoplay.js",
@@ -28,7 +28,6 @@ const JS = [
   "animations/interface.js",
   "animations/threads.js",
   "animations/thread-bg.js",
-  "barba.js",
 ];
 
 const CSS = [
@@ -47,7 +46,7 @@ const CSS = [
 ];
 
 // The JS files are concatenated into one scope before bundling (as Odyn did),
-// so barba.js can call top-level functions from the other files by name.
+// so files can call each other's top-level functions by name (e.g. table-of-contents.js uses site.js's `lenis`).
 // Duplicate top-level names across files fail the build instead of the page.
 const concatEntry = {
   name: "concat-entry",

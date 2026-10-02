@@ -1,5 +1,5 @@
 // -----------------------------------------
-// INTERACTIVE DOTS GRID (Barba-aware)
+// INTERACTIVE DOTS GRID
 // initInteractiveDotsGridBackground(scope)    → sets up every grid inside `scope` (default: whole page)
 // destroyInteractiveDotsGridBackground(scope) → tears down every grid inside `scope`
 // -----------------------------------------
@@ -283,7 +283,7 @@ function destroyInteractiveDotsGridBackground(scope = document) {
   }
 }
 
-// First page load. After that, barba.js sets up / tears down grids on each page change.
+// Runs once per page load (scope/teardown functions above are available if ever needed).
 // Wrapped so the DOMContentLoaded event isn't passed in as `scope`.
 const bootInteractiveDotsGridBackground = () => initInteractiveDotsGridBackground();
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootInteractiveDotsGridBackground); else bootInteractiveDotsGridBackground();

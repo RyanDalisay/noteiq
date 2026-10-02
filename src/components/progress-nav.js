@@ -6,7 +6,7 @@ function initProgressNavigation() {
     let navProgress = document.querySelector('[data-progress-nav-list]');
 
     // Bail out if the progress nav isn't on this page — prevents crashing
-    // the rest of the bundle (including Barba) on pages without it.
+    // the rest of the bundle on pages without it.
     if (!navProgress) return;
 
     // Create or select the moving indicator

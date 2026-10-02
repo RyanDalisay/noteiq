@@ -5,15 +5,16 @@ Custom JS/CSS for the NoteIQ Webflow site, bundled with esbuild (`build.mjs`) an
 ## Build
 
 - `npm run build` writes `dist/bundle.js` and `dist/bundle.css`; `npm run dev` watches and serves `dist/` on :8000.
-- Load order lives in the `JS` / `CSS` lists in `build.mjs`. New files must be added there. `src/barba.js` stays last.
-- JS files are concatenated into one scope before bundling, so top-level names must be unique across files (the build fails otherwise). barba.js calls some of them by name.
-- GSAP (and plugins), Lenis and Barba are globals from Webflow's custom code. Don't bundle or import them.
+- Load order lives in the `JS` / `CSS` lists in `build.mjs`. New files must be added there. `src/site.js` stays first (it sets the global GSAP defaults and Lenis).
+- JS files are concatenated into one scope before bundling, so top-level names must be unique across files (the build fails otherwise).
+- GSAP (and plugins) and Lenis are globals from Webflow's custom code; don't bundle or import them.
+- There is no Barba: every page is a full load, with CSS cross-document View Transitions and hover prerendering set up in `webflow/head.html`.
 - The bundle is injected by `webflow/footer.html` (CSS by `webflow/head.html`), usually after DOMContentLoaded has fired. Initialize with `if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();`, never a bare DOMContentLoaded listener.
 
 ## Project rules
 
 - Every NoteIQ animation mounts on an empty Div with `data-niq-anim="<name>"` and has its own class prefix (`na-` hero, `at-` transcription, `gc-` compliance, `ii-` interface, `lt-` threads, `ot-` thread-bg). Never style or animate the mount Div itself from the animation code; Webflow interactions control its opacity and transform (on /home-2's sticky tabs, `src/components/sticky-tabs.js` controls the panels' opacity instead).
-- Scripts must work with Barba: initialize on first load AND inside a container passed from barba.js (`initAfterEnterFunctions`). Anything continuous (loops, observers, drag or scroll listeners) needs a teardown called from `afterLeave`.
-- NoteIQ animations register with `window.NIQAnims` (automatic mount and cleanup via MutationObserver). They must pause off-screen, respect `prefers-reduced-motion`, and set their own ease and duration on every tween, because the site sets global GSAP defaults (barba.js).
+- Every page is a full page load, so scripts initialize once per page with the readyState pattern above; no page-swap re-init or teardown is needed. Prerendered pages run their scripts before they're shown, so don't start anything that depends on being visible until it is (IntersectionObserver-based pausing already handles this).
+- NoteIQ animations register with `window.NIQAnims` (automatic mount and cleanup via MutationObserver). They must pause off-screen, respect `prefers-reduced-motion`, and set their own ease and duration on every tween, because the site sets global GSAP defaults (site.js).
 - Don't modify global Lumos classes; scope everything.
 - Test changes in a browser before committing.
