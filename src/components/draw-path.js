@@ -5,10 +5,15 @@
 // screen fades its outline to its own colour.
 //
 // Webflow setup:
-//   [data-draw-path-wrap]                     the Div that contains the cards
-//   [data-draw-path-card="insight-blue"]      each bordered card, in order; the value
-//                                             is a swatch name (--swatch--<value>)
-//                                             or any CSS colour
+//   [data-draw-path-card="insight-blue"]      on each card, in order, OR on any element
+//                                             containing it (e.g. its section, handy when
+//                                             the card is a component instance). The
+//                                             outline that changes colour is the first
+//                                             bordered element at or inside it. The value
+//                                             is a swatch name (--swatch--<value>) or any
+//                                             CSS colour.
+//   [data-draw-path-wrap]                     optional: the element containing the cards;
+//                                             defaults to the cards' common parent
 //
 // Inspired by Osmo's "Draw path on scroll", but the connectors are computed from
 // the cards' live positions (so they line up at every width) and drawn with
@@ -20,12 +25,33 @@ gsap.registerPlugin(ScrollTrigger);
 
 const drawPaths = []; // { wrap, destroy }
 
+// The element whose outline changes colour: the marked element itself if it has a
+// border, otherwise the first bordered element inside it
+function drawPathOutlined(marker) {
+    const hasBorder = (node) => {
+        const cs = getComputedStyle(node);
+        return parseFloat(cs.borderTopWidth) > 0 && cs.borderTopStyle !== "none";
+    };
+    if (hasBorder(marker)) return marker;
+    return [...marker.querySelectorAll("*")].find(hasBorder) || marker;
+}
+
 function initDrawPath(scope = document) {
-    scope.querySelectorAll("[data-draw-path-wrap]").forEach((wrap) => {
+    // Wrappers: explicit [data-draw-path-wrap] elements, plus the common parent of any
+    // marked cards that aren't inside one
+    const wraps = new Set(scope.querySelectorAll("[data-draw-path-wrap]"));
+    scope.querySelectorAll("[data-draw-path-card]").forEach((marker) => {
+        if (!marker.closest("[data-draw-path-wrap]") && marker.parentElement) wraps.add(marker.parentElement);
+    });
+
+    wraps.forEach((wrap) => {
         if (drawPaths.some(d => d.wrap === wrap)) return;
 
-        const cards = [...wrap.querySelectorAll("[data-draw-path-card]")];
-        if (cards.length < 2) return;
+        // Marked elements in this wrapper (not nested inside another marked element)
+        const markers = [...wrap.querySelectorAll("[data-draw-path-card]")]
+            .filter(m => !m.parentElement.closest("[data-draw-path-card]"));
+        if (markers.length < 2) return;
+        const cards = markers.map(drawPathOutlined);
 
         const NS = "http://www.w3.org/2000/svg";
         const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -42,7 +68,7 @@ function initDrawPath(scope = document) {
             return resolved;
         }
 
-        const colors = cards.map(card => resolveColor(card.getAttribute("data-draw-path-card"), card));
+        const colors = markers.map((marker, i) => resolveColor(marker.getAttribute("data-draw-path-card"), cards[i]));
         const restingBorders = cards.map(card => getComputedStyle(card).borderTopColor);
 
         // One SVG layer over the wrapper; connectors only sit in the gaps between cards
