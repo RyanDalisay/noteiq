@@ -10,7 +10,6 @@ const OUT = path.resolve("dist");
 
 // Load order (matches the Odyn v7 bundle, except barba.js is last because it
 // calls functions defined in the other files, e.g. initDraggableMarquee).
-// glowinginteractivedotgrid.js is intentionally not bundled (same as Odyn).
 const JS = [
   "main.js",
   "components/gradientwavetext.js",
@@ -21,6 +20,7 @@ const JS = [
   "components/scaling-scroll.js",
   "components/draggable-marquee.js",
   "components/progress-nav.js",
+  "components/interactive-dots-grid.js",
   "animations/hero.js",
   "animations/transcription.js",
   "animations/compliance.js",

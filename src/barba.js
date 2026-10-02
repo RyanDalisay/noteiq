@@ -64,6 +64,11 @@ function initAfterEnterFunctions(next) {
         initDraggableMarquee(nextPage);
     }
 
+    // Interactive dots grid: canvases are sized to the new page's final layout
+    if (has('[data-dots-canvas-init]') && typeof initInteractiveDotsGridBackground === "function") {
+        initInteractiveDotsGridBackground(nextPage);
+    }
+
 
     if (hasLenis) {
         lenis.resize();
@@ -182,6 +187,10 @@ barba.hooks.afterLeave(data => {
     // Tear down page scripts that keep running on their own (loops, drag listeners)
     if (typeof destroyDraggableMarquee === "function") {
         destroyDraggableMarquee(data.current.container);
+    }
+
+    if (typeof destroyInteractiveDotsGridBackground === "function") {
+        destroyInteractiveDotsGridBackground(data.current.container);
     }
 
     if (hasScrollTrigger) {
