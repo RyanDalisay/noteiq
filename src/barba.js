@@ -304,7 +304,9 @@ function initLenis() {
 
 function resetPage(container) {
     window.scrollTo(0, 0);
-    gsap.set(container, { clearProps: "position,top,left,right" });
+    // Clear everything the transition set on the container (position from
+    // beforeEnter, opacity/visibility from the autoAlpha fade), so it matches a fresh load
+    gsap.set(container, { clearProps: "position,top,left,right,opacity,visibility" });
 
     if (hasLenis) {
         lenis.resize();
