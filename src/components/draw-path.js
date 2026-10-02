@@ -217,12 +217,16 @@ function initDrawPath(scope = document) {
         io.observe(wrap);
         draw(clock);
 
-        // Cards: the one crossing the middle of the screen takes its colour
+        // Cards: the one crossing the middle of the screen takes its colour, and keeps it
+        // until its connector has finished drawing (the next card's top reaches the
+        // middle), so the colour hands off to the next card as the connector arrives
         cards.forEach((card, i) => {
+            const next = cards[i + 1];
             triggers.push(ScrollTrigger.create({
                 trigger: card,
                 start: "top center",
-                end: "bottom center",
+                endTrigger: next || card,
+                end: next ? "top center" : "bottom center",
                 onToggle: (self) => {
                     gsap.to(card, {
                         borderColor: self.isActive ? colors[i] : restingBorders[i],
