@@ -1,4 +1,5 @@
-/* Draw path (Features page card connectors) — see draw-path.js. Classes prefixed dp-. */
+/* Draw path (Features page card connectors) — see draw-path.js. Classes prefixed dp-.
+   The wave and glow match the Features hero thread (thread-bg). */
 
 .dp-svg {
     position: absolute;
@@ -8,19 +9,15 @@
     pointer-events: none;
 }
 
-.dp-line,
-.dp-glow {
+/* The wave: 1px, drawn in on scroll via stroke-dashoffset (pathLength = 1) */
+.dp-line {
     fill: none;
+    stroke-width: 1px;
     stroke-dasharray: 1;
     stroke-linecap: butt;
 }
 
-.dp-line {
-    stroke-width: 2px;
-}
-
-/* Subtle glow: a wider, blurred copy of the line behind it */
-.dp-glow {
-    stroke-width: 6px;
-    opacity: 0.55;
+/* Faint tint filling the wave's curves, like the coloured fills between the hero's threads */
+.dp-tint {
+    opacity: 0.15;
 }

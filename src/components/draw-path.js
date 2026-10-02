@@ -1,7 +1,8 @@
 // -----------------------------------------
 // DRAW PATH (Features page card connectors)
-// Short gradient connectors from the bottom of each card to the top of the next,
-// drawn as you scroll, with a soft glow. The card crossing the middle of the
+// Short connectors from the bottom of each card to the top of the next: a 1px
+// gradient wave that moves continuously and draws in as you scroll, with a pulsing
+// glow, both matching the Features hero thread. The card crossing the middle of the
 // screen fades its outline to its own colour.
 //
 // Webflow setup:
@@ -88,20 +89,66 @@ function initDrawPath(scope = document) {
             return node;
         }
 
+        // Wave + glow, matching the Features hero thread (thread-bg.js): the hero's
+        // wave is 280 x 18.75 units on a 1920-wide artwork, moving at 2π/3.4 rad/s,
+        // and its glow is a soft coloured haze that pulses every 3.2s plus a faint
+        // tint filling the wave's curves. Sizes scale with the card width the same
+        // way the hero scales with its own width.
+        const WAVE = { length: 280, amp: 18.75, art: 1920, speed: 2 * Math.PI / 3.4 };
+        const GLOW = { min: 0.45, max: 1, period: 3.2 };
+
         const connectors = cards.slice(0, -1).map((card, i) => {
             const grad = el("linearGradient", { id: `${uid}-g${i}`, gradientUnits: "userSpaceOnUse" }, defs);
             el("stop", { offset: "0", "stop-color": colors[i] }, grad);
             el("stop", { offset: "1", "stop-color": colors[i + 1] }, grad);
-            const blur = el("filter", { id: `${uid}-f${i}`, filterUnits: "userSpaceOnUse" }, defs);
-            el("feGaussianBlur", { stdDeviation: "5" }, blur);
+
+            // Soft haze: one radial glow per card colour (top = this card, bottom = next)
+            const hazes = [colors[i], colors[i + 1]].map((color, k) => {
+                const rg = el("radialGradient", { id: `${uid}-h${i}${k}` }, defs);
+                el("stop", { offset: "0", "stop-color": color, "stop-opacity": "0.35" }, rg);
+                el("stop", { offset: "1", "stop-color": color, "stop-opacity": "0" }, rg);
+                return rg;
+            });
+            // Reveal the tint along with the line as it draws
+            const clip = el("clipPath", { id: `${uid}-c${i}` }, defs);
+            const clipRect = el("rect", {}, clip);
 
             const g = el("g", { class: "dp-connector" }, svg);
-            const glow = el("path", { class: "dp-glow", pathLength: "1", stroke: `url(#${grad.id})`, filter: `url(#${blur.id})` }, g);
+            const hazeEls = hazes.map(rg => el("ellipse", { class: "dp-haze", fill: `url(#${rg.id})` }, g));
+            const tint = el("path", { class: "dp-tint", fill: `url(#${grad.id})`, "clip-path": `url(#${clip.id})` }, g);
             const line = el("path", { class: "dp-line", pathLength: "1", stroke: `url(#${grad.id})` }, g);
-            return { grad, blur, glow, line, top: 0, bottom: 0 };
+            return { grad, hazeEls, clipRect, tint, line, x: 0, top: 0, bottom: 0, scale: 1, st: null };
         });
 
         wrap.appendChild(svg);
+
+        // The wave at time t: tapers to the centre line at both ends so it still
+        // meets each card's edge in the middle
+        function smooth(e0, e1, v) { const k = Math.min(1, Math.max(0, (v - e0) / (e1 - e0))); return k * k * (3 - 2 * k); }
+        function wavePoints(c, t) {
+            const len = c.bottom - c.top, amp = WAVE.amp * c.scale, wl = WAVE.length * c.scale, ease = Math.min(40, len / 3);
+            const pts = [];
+            for (let y = c.top; y <= c.bottom + 0.1; y += 4) {
+                const env = smooth(c.top, c.top + ease, y) * (1 - smooth(c.bottom - ease, c.bottom, y));
+                const x = c.x + amp * env * Math.sin(2 * Math.PI * (y - c.top) / wl - t * WAVE.speed);
+                pts.push(x.toFixed(1) + " " + Math.min(y, c.bottom).toFixed(1));
+            }
+            return pts;
+        }
+
+        function draw(t, all = false) {
+            const pulse = GLOW.min + (GLOW.max - GLOW.min) * (0.5 + 0.5 * Math.cos(2 * Math.PI * t / GLOW.period));
+            const viewTop = window.scrollY - wrapTop(), viewBottom = viewTop + window.innerHeight;
+            connectors.forEach((c) => {
+                if (!all && (c.bottom < viewTop - 200 || c.top > viewBottom + 200)) return; // off screen: skip
+                const pts = wavePoints(c, t);
+                c.line.setAttribute("d", "M" + pts.join("L"));
+                c.tint.setAttribute("d", "M" + pts.join("L") + `L${c.x.toFixed(1)} ${c.bottom.toFixed(1)}L${c.x.toFixed(1)} ${c.top.toFixed(1)}Z`);
+                const progress = c.st ? c.st.progress : 1;
+                c.clipRect.setAttribute("height", Math.max(0, (c.bottom - c.top) * progress + 2));
+                c.hazeEls.forEach(h => h.setAttribute("opacity", (pulse * progress).toFixed(3)));
+            });
+        }
 
         // Lay the connectors out from the cards' current positions
         function layout() {
@@ -113,31 +160,35 @@ function initDrawPath(scope = document) {
             connectors.forEach((c, i) => {
                 const a = cards[i].getBoundingClientRect();
                 const b = cards[i + 1].getBoundingClientRect();
-                const x = ((a.left + a.width / 2) + (b.left + b.width / 2)) / 2 - w.left;
-                const y1 = a.bottom - w.top;
-                const y2 = Math.max(y1, b.top - w.top);
-                const d = `M${x.toFixed(1)} ${y1.toFixed(1)}V${y2.toFixed(1)}`;
-                c.line.setAttribute("d", d);
-                c.glow.setAttribute("d", d);
-                c.grad.setAttribute("x1", x); c.grad.setAttribute("x2", x);
-                c.grad.setAttribute("y1", y1); c.grad.setAttribute("y2", y2);
-                for (const [k, v] of Object.entries({ x: x - 40, y: y1 - 40, width: 80, height: y2 - y1 + 80 })) c.blur.setAttribute(k, v);
-                c.top = y1; c.bottom = y2;
+                c.x = ((a.left + a.width / 2) + (b.left + b.width / 2)) / 2 - w.left;
+                c.top = a.bottom - w.top;
+                c.bottom = Math.max(c.top, b.top - w.top);
+                c.scale = Math.min(a.width, b.width) / WAVE.art;
+                const len = c.bottom - c.top, spread = 220 * c.scale + 40;
+                c.grad.setAttribute("x1", c.x); c.grad.setAttribute("x2", c.x);
+                c.grad.setAttribute("y1", c.top); c.grad.setAttribute("y2", c.bottom);
+                c.hazeEls.forEach((h, k) => {
+                    h.setAttribute("cx", c.x); h.setAttribute("cy", c.top + len * (k ? 0.7 : 0.3));
+                    h.setAttribute("rx", spread); h.setAttribute("ry", len * 0.55);
+                });
+                c.clipRect.setAttribute("x", c.x - spread); c.clipRect.setAttribute("y", c.top);
+                c.clipRect.setAttribute("width", spread * 2);
             });
+            draw(clock, true); // every connector, so off-screen ones (and reduced motion) have a shape
         }
-        layout();
 
         const triggers = [];
         const wrapTop = () => wrap.getBoundingClientRect().top + window.scrollY;
+        let clock = 0, raf = 0, running = false, last = 0;
+        layout();
 
         // Connectors: draw as each gap passes the middle of the screen (linear, scrubbed)
         connectors.forEach((c) => {
-            const paths = [c.line, c.glow];
             // Tweened as an attribute: GSAP rounds px CSS values, and with pathLength=1
             // that would make the line pop in instead of drawing
-            if (reduceMotion) { gsap.set(paths, { attr: { "stroke-dashoffset": 0 } }); return; }
-            gsap.set(paths, { attr: { "stroke-dashoffset": 1 } });
-            const tween = gsap.to(paths, {
+            if (reduceMotion) { gsap.set(c.line, { attr: { "stroke-dashoffset": 0 } }); return; }
+            gsap.set(c.line, { attr: { "stroke-dashoffset": 1 } });
+            const tween = gsap.to(c.line, {
                 attr: { "stroke-dashoffset": 0 },
                 ease: "none",
                 duration: 1,
@@ -147,10 +198,28 @@ function initDrawPath(scope = document) {
                     end: () => wrapTop() + c.bottom - window.innerHeight / 2,
                     scrub: true,
                     invalidateOnRefresh: true,
+                    onUpdate: () => { if (reduceMotion || !running) draw(clock); },
                 },
             });
-            triggers.push(tween.scrollTrigger);
+            c.st = tween.scrollTrigger;
+            triggers.push(c.st);
         });
+
+        // Keep the waves moving only while the connectors' area is on screen
+        function frame(ts) {
+            if (!running) return;
+            if (last) clock += Math.min(ts - last, 100) / 1000;
+            last = ts;
+            draw(clock);
+            raf = requestAnimationFrame(frame);
+        }
+        const io = new IntersectionObserver((entries) => {
+            const visible = entries[0].isIntersecting;
+            if (visible && !running && !reduceMotion) { running = true; last = 0; raf = requestAnimationFrame(frame); }
+            if (!visible && running) { running = false; cancelAnimationFrame(raf); }
+        });
+        io.observe(wrap);
+        draw(clock);
 
         // Cards: the one crossing the middle of the screen takes its colour
         cards.forEach((card, i) => {
@@ -182,9 +251,12 @@ function initDrawPath(scope = document) {
         drawPaths.push({
             wrap,
             destroy() {
+                running = false;
+                cancelAnimationFrame(raf);
+                io.disconnect();
                 resizeObserver.disconnect();
                 triggers.forEach(t => t && t.kill());
-                connectors.forEach(c => gsap.killTweensOf([c.line, c.glow]));
+                connectors.forEach(c => gsap.killTweensOf(c.line));
                 cards.forEach(card => { gsap.killTweensOf(card); gsap.set(card, { clearProps: "borderColor" }); });
                 svg.remove();
                 if (setPosition) wrap.style.position = "";
