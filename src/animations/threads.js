@@ -154,7 +154,8 @@
             ['_loop', '_dots'].forEach(function (k) { try { if (el[k] && el[k].stop) el[k].stop(); } catch (e) { } });
             try { if (el._io) el._io.disconnect(); } catch (e) { }
             try { if (el._ro) el._ro.disconnect(); } catch (e) { }
-            el._niq = el._loop = el._dots = el._io = el._ro = null;
+            try { if (el._mo) el._mo.disconnect(); } catch (e) { }
+            el._niq = el._loop = el._dots = el._io = el._ro = el._mo = null;
             el.removeAttribute('data-niq-mounted'); el.removeAttribute('role'); el.removeAttribute('aria-label');
             el.className = el.className.replace(OWN, '').replace(/\s+/g, ' ').trim();
             el.innerHTML = '';

@@ -90,7 +90,12 @@
         var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         if (reduce) { tl.pause(); tl.seek('filter+=1.2', false); }
         else if ('IntersectionObserver' in window) {
-            (root._io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { if (!root._userPaused) tl.play(); } else tl.pause(); }); }, { threshold: .3 })).observe(root);
+            // Play only while on screen AND shown: Webflow interactions fade stacked
+            // panels in and out through the mount Div's opacity (e.g. the /home-2 sticky tabs)
+            var inView = false;
+            var sync = function () { if (inView && parseFloat(getComputedStyle(root).opacity) > .01) { if (!root._userPaused) tl.play(); } else tl.pause(); };
+            (root._io = new IntersectionObserver(function (es) { es.forEach(function (e) { inView = e.isIntersecting; }); sync(); }, { threshold: .3 })).observe(root);
+            (root._mo = new MutationObserver(sync)).observe(root, { attributes: true, attributeFilter: ['style'] });
         } else tl.play();
         root._niq = tl;
     }
@@ -120,7 +125,8 @@
             ['_loop', '_dots'].forEach(function (k) { try { if (el[k] && el[k].stop) el[k].stop(); } catch (e) { } });
             try { if (el._io) el._io.disconnect(); } catch (e) { }
             try { if (el._ro) el._ro.disconnect(); } catch (e) { }
-            el._niq = el._loop = el._dots = el._io = el._ro = null;
+            try { if (el._mo) el._mo.disconnect(); } catch (e) { }
+            el._niq = el._loop = el._dots = el._io = el._ro = el._mo = null;
             el.removeAttribute('data-niq-mounted'); el.removeAttribute('role'); el.removeAttribute('aria-label');
             el.className = el.className.replace(OWN, '').replace(/\s+/g, ' ').trim();
             el.innerHTML = '';
