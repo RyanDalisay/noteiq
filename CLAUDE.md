@@ -12,7 +12,7 @@ Custom JS/CSS for the NoteIQ Webflow site, bundled with esbuild (`build.mjs`) an
 
 ## Project rules
 
-- Every NoteIQ animation mounts on an empty Div with `data-niq-anim="<name>"` and has its own class prefix (`na-` hero, `at-` transcription, `gc-` compliance, `ii-` interface, `lt-` threads, `ot-` thread-bg). Never style or animate the mount Div itself; Webflow interactions control its opacity and transform.
+- Every NoteIQ animation mounts on an empty Div with `data-niq-anim="<name>"` and has its own class prefix (`na-` hero, `at-` transcription, `gc-` compliance, `ii-` interface, `lt-` threads, `ot-` thread-bg). Never style or animate the mount Div itself from the animation code; Webflow interactions control its opacity and transform (on /home-2's sticky tabs, `src/components/sticky-tabs.js` controls the panels' opacity instead).
 - Scripts must work with Barba: initialize on first load AND inside a container passed from barba.js (`initAfterEnterFunctions`). Anything continuous (loops, observers, drag or scroll listeners) needs a teardown called from `afterLeave`.
 - NoteIQ animations register with `window.NIQAnims` (automatic mount and cleanup via MutationObserver). They must pause off-screen, respect `prefers-reduced-motion`, and set their own ease and duration on every tween, because the site sets global GSAP defaults (barba.js).
 - Don't modify global Lumos classes; scope everything.

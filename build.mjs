@@ -21,6 +21,7 @@ const JS = [
   "components/draggable-marquee.js",
   "components/progress-nav.js",
   "components/interactive-dots-grid.js",
+  "components/sticky-tabs.js",
   "animations/hero.js",
   "animations/transcription.js",
   "animations/compliance.js",

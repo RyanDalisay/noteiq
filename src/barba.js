@@ -69,6 +69,11 @@ function initAfterEnterFunctions(next) {
         initInteractiveDotsGridBackground(nextPage);
     }
 
+    // Sticky tabs: ScrollTriggers measured against the new page's final layout
+    if (has('.feature-sticky-tabs_component') && typeof initStickyTabs === "function") {
+        initStickyTabs(nextPage);
+    }
+
 
     if (hasLenis) {
         lenis.resize();
@@ -207,6 +212,10 @@ barba.hooks.afterLeave(data => {
 
     if (typeof destroyInteractiveDotsGridBackground === "function") {
         destroyInteractiveDotsGridBackground(data.current.container);
+    }
+
+    if (typeof destroyStickyTabs === "function") {
+        destroyStickyTabs(data.current.container);
     }
 
     if (hasScrollTrigger) {
