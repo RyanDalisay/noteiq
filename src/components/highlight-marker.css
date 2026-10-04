@@ -1,0 +1,36 @@
+/* Highlight marker text reveal — see highlight-marker.js. Classes prefixed hm-. */
+
+/* Hidden until the script covers the lines with bars. Safety net: if the script never
+   runs, the text appears after 3s anyway (JS shows it straight away when it does run). */
+[data-highlight-marker-reveal] {
+    visibility: hidden;
+    animation: hm-failsafe 0s 3s forwards;
+}
+
+@keyframes hm-failsafe {
+    to { visibility: visible; }
+}
+
+/* Always visible while editing in Webflow */
+.wf-design-mode [data-highlight-marker-reveal] {
+    visibility: visible;
+    animation: none;
+}
+
+[data-highlight-marker-reveal] .hm-line {
+    width: auto;
+    display: inline-block !important;
+    margin: -0.055em 0px;
+}
+
+/* The bar: brand gradient by default (data-marker-theme overrides it per element) */
+.hm-bar {
+    position: absolute;
+    inset: -0.055em 0px;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(to right,
+            var(--swatch--morning-slate-brand-500),
+            var(--swatch--insight-blue),
+            var(--swatch--intelligence-violet));
+}
