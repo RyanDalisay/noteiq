@@ -29,6 +29,6 @@
 .hm-bar {
     position: absolute;
     background: linear-gradient(to right,
-            var(--swatch--brand-300),
-            var(--swatch--morning-slate-brand-500));
+            var(--swatch--brand-200),
+            var(--swatch--brand-300));
 }
