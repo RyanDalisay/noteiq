@@ -71,7 +71,7 @@
     width: 1500px;
     height: 1500px;
     transform-origin: 0 0;
-    transform: scale(tan(atan2(100cqw, 1500px)));
+    transform: scale(var(--niq-scale, tan(atan2(100cqw, 1500px)))); /* --niq-scale: niq-stage-scale.js */
 }
 
 .niq-anim .na-photo {

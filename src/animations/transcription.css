@@ -68,7 +68,7 @@
     width: 1000px;
     height: 1500px;
     transform-origin: 0 0;
-    transform: scale(tan(atan2(100cqw, 1000px)));
+    transform: scale(var(--niq-scale, tan(atan2(100cqw, 1000px)))); /* --niq-scale: niq-stage-scale.js */
 }
 
 /* screen: 60px inset top/left, bleeds off right + bottom */

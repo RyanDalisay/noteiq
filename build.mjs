@@ -33,6 +33,7 @@ const JS = [
   "animations/threads.js",
   "animations/thread-bg.js",
   "animations/audit.js",
+  "components/niq-stage-scale.js",
 ];
 
 const CSS = [

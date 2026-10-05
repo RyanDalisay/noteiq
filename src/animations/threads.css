@@ -35,7 +35,7 @@
     width: 1920px;
     height: 740px;
     transform-origin: 0 0;
-    transform: scale(tan(atan2(100cqw, 1920px)));
+    transform: scale(var(--niq-scale, tan(atan2(100cqw, 1920px)))); /* --niq-scale: niq-stage-scale.js */
     animation: lt-in .5s ease-out both;
 }
 
