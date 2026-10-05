@@ -20,9 +20,15 @@ function initInteractiveDotsGridBackground(scope = document) {
   const pressScale = 1.5;
   const hoverRadius = 12;
   const easeDuration = 0.5;
+  const followSpeed = 8; // how quickly the glow catches up with the pointer (higher = tighter)
+  const trailLifetime = 0.7; // seconds a trail point keeps dots lit after the pointer passes
+  const trailRadius = 0.6; // trail glow radius, relative to the hover radius
+  const trailStrength = 0.85; // trail glow at its brightest, relative to the hover glow
 
   const hasPointer = matchMedia('(hover: hover) and (pointer: fine)').matches;
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const pointer = { x: 0, y: 0, cx: 0, cy: 0, active: false };
+  const trail = []; // { x, y, t }: where the glow has been, in viewport coordinates (like the dots)
   const hover = { value: 0, from: 0, to: 0, start: 0 };
   const press = { value: 0, from: 0, to: 0, start: 0 };
   const canvases = [];
@@ -118,6 +124,33 @@ function initInteractiveDotsGridBackground(scope = document) {
     const hovering = hasPointer && hover.value > 0;
     const ctx = state.ctx;
 
+    // Trail points still glowing: position, glow strength (fades with age) and reach
+    const now = performance.now();
+    const trailRadiusPx = radius * trailRadius;
+    const glow = [];
+    let minX = px - radius, maxX = px + radius, minY = py - radius, maxY = py + radius;
+    if (hovering) {
+      for (const point of trail) {
+        const life = 1 - (now - point.t) / (trailLifetime * 1000);
+        if (life <= 0) continue;
+        glow.push(point.x, point.y, life * life * trailStrength);
+        minX = Math.min(minX, point.x - trailRadiusPx); maxX = Math.max(maxX, point.x + trailRadiusPx);
+        minY = Math.min(minY, point.y - trailRadiusPx); maxY = Math.max(maxY, point.y + trailRadiusPx);
+      }
+    }
+
+    // How lit a dot is: the pointer's glow or the strongest trail point near it
+    const influenceAt = (gx, gy) => {
+      if (!hovering || gx < minX || gx > maxX || gy < minY || gy > maxY) return 0;
+      let value = Math.max(0, 1 - Math.hypot(gx - px, gy - py) / radius);
+      for (let i = 0; i < glow.length; i += 3) {
+        if (glow[i + 2] <= value) continue;
+        const d = Math.hypot(gx - glow[i], gy - glow[i + 1]);
+        if (d < trailRadiusPx) value = Math.max(value, (1 - d / trailRadiusPx) * glow[i + 2]);
+      }
+      return value * hover.value;
+    };
+
     ctx.clearRect(0, 0, state.width, state.height);
 
     // Only draw the part of the canvas that is on screen
@@ -138,7 +171,7 @@ function initInteractiveDotsGridBackground(scope = document) {
       for (let col = colStart; col <= colEnd; col++) {
         const gx = col * spacing;
         const x = gx - left;
-        const influence = hovering ? Math.max(0, 1 - Math.hypot(gx - px, gy - py) / radius) * hover.value : 0;
+        const influence = influenceAt(gx, gy);
 
         if (influence > 0) { near.push(x, y, influence); continue; }
         if (shape === 'square') {
@@ -183,15 +216,24 @@ function initInteractiveDotsGridBackground(scope = document) {
       pointer.cx = pointer.x;
       pointer.cy = pointer.y;
     } else {
-      const strength = 1 - Math.exp(-delta * 6 / easeDuration);
+      const strength = 1 - Math.exp(-delta * followSpeed);
       pointer.cx += (pointer.x - pointer.cx) * strength;
       pointer.cy += (pointer.y - pointer.cy) * strength;
     }
 
+    // Leave a trail point every half dot-spacing the glow travels; drop the faded ones
+    if (!reduceMotion && pointer.active) {
+      const last = trail[trail.length - 1];
+      if (!last || Math.hypot(pointer.cx - last.x, pointer.cy - last.y) > spacing / 2) {
+        trail.push({ x: pointer.cx, y: pointer.cy, t: time });
+      }
+    }
+    while (trail.length && (time - trail[0].t > trailLifetime * 1000 || trail.length > 64)) trail.shift();
+
     renderAll(true);
 
-    // Keep going only while something is still moving; scrolling redraws on its own
-    const moving = hover.value !== hover.to || press.value !== press.to ||
+    // Keep going only while something is still moving or fading; scrolling redraws on its own
+    const moving = hover.value !== hover.to || press.value !== press.to || (hover.value > 0 && trail.length > 0) ||
       (hover.value > 0 && (Math.abs(pointer.x - pointer.cx) > 0.5 || Math.abs(pointer.y - pointer.cy) > 0.5));
     if (moving) raf = requestAnimationFrame(tick);
   }
@@ -237,6 +279,7 @@ function initInteractiveDotsGridBackground(scope = document) {
       if (inside) {
         pointer.cx = pointer.x;
         pointer.cy = pointer.y;
+        trail.length = 0;
       } else {
         setEase(press, 0);
       }
