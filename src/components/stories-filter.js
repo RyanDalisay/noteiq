@@ -44,7 +44,10 @@ function initStoriesFilter(scope = document) {
             const value = el.getAttribute("data-story-slug");
             if (value) return value;
             const link = el.querySelector('a[href*="/stories/"]');
-            return link ? new URL(link.href, window.location.href).pathname.split("/").filter(Boolean).pop() : null;
+            if (link) return new URL(link.href, window.location.href).pathname.split("/").filter(Boolean).pop();
+            // No link (not connected yet): key by the title so the story still shows
+            const title = el.querySelector("h1, h2, h3, h4, h5, h6");
+            return title ? "title:" + title.textContent.trim() : null;
         };
 
         const featuredItems = [...root.querySelectorAll("[data-stories-featured-list] [data-story-slug]")];
