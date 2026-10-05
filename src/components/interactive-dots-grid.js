@@ -74,15 +74,18 @@ function initInteractiveDotsGridBackground(scope = document) {
     const ctx = canvas.getContext('2d');
 
     canvas.setAttribute('aria-hidden', 'true');
-    Object.assign(canvas.style, { position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' });
+    // At most one screen tall: it's moved to the visible part of the section as you
+    // scroll (the dots are fixed to the viewport, so nothing off screen needs pixels)
+    Object.assign(canvas.style, { position: 'absolute', left: 0, top: 0, width: '100%', pointerEvents: 'none' });
 
     const setPosition = getComputedStyle(element).position === 'static';
     if (setPosition) element.style.position = 'relative';
 
     element.prepend(canvas);
     canvases.push({
-      element, canvas, ctx, setPosition, width: 0, height: 0, visible: false,
+      element, canvas, ctx, setPosition, width: 0, elementHeight: 0, height: 0, offset: -1, visible: false,
       inactive: parseColor(element.getAttribute('data-dots-color-inactive') || dotColorInactive, element),
+      get inactiveStyle() { return `rgba(${this.inactive.join(',')})`; },
       active: parseColor(element.getAttribute('data-dots-color-active') || dotColorActive, element)
     });
   });
@@ -98,20 +101,36 @@ function initInteractiveDotsGridBackground(scope = document) {
   // fixed in the background while the section scrolls over them.
   function render(state) {
     const rect = state.element.getBoundingClientRect();
+
+    // Move the (screen-sized) canvas to the part of the section that's on screen.
+    // Snapped to whole device pixels: a canvas at a fractional position gets resampled,
+    // which blurs and lightens the 1-2px dots.
+    const offset = Math.round(Math.min(Math.max(-rect.top, 0), Math.max(0, state.elementHeight - state.height)) * dpr) / dpr;
+    if (offset !== state.offset) {
+      state.offset = offset;
+      state.canvas.style.transform = `translateY(${offset}px)`;
+    }
     const left = rect.left;
-    const top = rect.top;
+    const top = rect.top + offset;
     const px = pointer.cx;
     const py = pointer.cy;
     const maxScale = dotMaxScale * (1 + (pressScale - 1) * press.value);
+    const hovering = hasPointer && hover.value > 0;
+    const ctx = state.ctx;
 
-    state.ctx.clearRect(0, 0, state.width, state.height);
+    ctx.clearRect(0, 0, state.width, state.height);
 
-    // Only draw the part of the section that is on screen
+    // Only draw the part of the canvas that is on screen
     const colStart = Math.floor(Math.max(left, 0) / spacing);
     const colEnd = Math.ceil(Math.min(left + state.width, innerWidth) / spacing);
     const rowStart = Math.floor(Math.max(top, 0) / spacing);
     const rowEnd = Math.ceil(Math.min(top + state.height, innerHeight) / spacing);
 
+    // Resting dots all share one colour and size: draw them as a single path.
+    // Dots near the pointer are drawn individually afterwards.
+    const near = [];
+    ctx.fillStyle = state.inactiveStyle;
+    ctx.beginPath();
     for (let row = rowStart; row <= rowEnd; row++) {
       const gy = row * spacing;
       const y = gy - top;
@@ -119,18 +138,29 @@ function initInteractiveDotsGridBackground(scope = document) {
       for (let col = colStart; col <= colEnd; col++) {
         const gx = col * spacing;
         const x = gx - left;
-        const influence = hasPointer && hover.value ? Math.max(0, 1 - Math.hypot(gx - px, gy - py) / radius) * hover.value : 0;
-        const currentSize = size * (1 + (maxScale - 1) * influence);
+        const influence = hovering ? Math.max(0, 1 - Math.hypot(gx - px, gy - py) / radius) * hover.value : 0;
 
-        state.ctx.fillStyle = mixColor(state.inactive, state.active, influence);
-
+        if (influence > 0) { near.push(x, y, influence); continue; }
         if (shape === 'square') {
-          state.ctx.fillRect(x - currentSize / 2, y - currentSize / 2, currentSize, currentSize);
+          ctx.rect(x - size / 2, y - size / 2, size, size);
         } else {
-          state.ctx.beginPath();
-          state.ctx.arc(x, y, currentSize / 2, 0, Math.PI * 2);
-          state.ctx.fill();
+          ctx.moveTo(x + size / 2, y);
+          ctx.arc(x, y, size / 2, 0, Math.PI * 2);
         }
+      }
+    }
+    ctx.fill();
+
+    for (let i = 0; i < near.length; i += 3) {
+      const x = near[i], y = near[i + 1], influence = near[i + 2];
+      const currentSize = size * (1 + (maxScale - 1) * influence);
+      ctx.fillStyle = mixColor(state.inactive, state.active, influence);
+      if (shape === 'square') {
+        ctx.fillRect(x - currentSize / 2, y - currentSize / 2, currentSize, currentSize);
+      } else {
+        ctx.beginPath();
+        ctx.arc(x, y, currentSize / 2, 0, Math.PI * 2);
+        ctx.fill();
       }
     }
   }
@@ -159,7 +189,11 @@ function initInteractiveDotsGridBackground(scope = document) {
     }
 
     renderAll(true);
-    raf = requestAnimationFrame(tick);
+
+    // Keep going only while something is still moving; scrolling redraws on its own
+    const moving = hover.value !== hover.to || press.value !== press.to ||
+      (hover.value > 0 && (Math.abs(pointer.x - pointer.cx) > 0.5 || Math.abs(pointer.y - pointer.cy) > 0.5));
+    if (moving) raf = requestAnimationFrame(tick);
   }
 
   function start() {
@@ -178,14 +212,16 @@ function initInteractiveDotsGridBackground(scope = document) {
     canvases.forEach(state => {
       const rect = state.element.getBoundingClientRect();
       state.width = rect.width;
-      state.height = rect.height;
+      state.elementHeight = rect.height;
+      state.height = Math.min(rect.height, innerHeight);
+      state.offset = -1;
+      state.canvas.style.height = state.height + 'px';
       state.canvas.width = Math.round(rect.width * dpr);
-      state.canvas.height = Math.round(rect.height * dpr);
+      state.canvas.height = Math.round(state.height * dpr);
       state.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     });
 
     renderAll();
-    start();
   }
 
   function onPointerMove(e) {
@@ -206,7 +242,7 @@ function initInteractiveDotsGridBackground(scope = document) {
       }
     }
 
-    start();
+    if (pointer.active || hover.value !== hover.to || hover.value > 0) start();
   }
 
   // Redraw on scroll so the dots stay put (at most once per frame; the hover
@@ -234,7 +270,7 @@ function initInteractiveDotsGridBackground(scope = document) {
       if (state) state.visible = entry.isIntersecting;
     });
 
-    hasPointer ? start() : renderAll(true);
+    renderAll(true);
   });
 
   const resizeObserver = new ResizeObserver(resize);
