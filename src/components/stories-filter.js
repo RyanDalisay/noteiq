@@ -5,16 +5,20 @@
 //
 // Webflow setup (custom attributes):
 //   [data-stories]                     wrapper; data-stories-per-page="9" (editable)
-//   [data-stories-filter="all"]        the "All" button
-//   [data-stories-filter="{tag slug}"] each tag button (Collection List of Story Tags);
-//                                      data-stories-featured="{Featured Story: Slug}"
-//   [data-stories-featured-list]       Collection List of Stories in the large layout
-//     [data-story-slug="{slug}"]       each item
-//     [data-story-flag="featured-all"] inside an item, conditionally visible when
+//   [data-stories-filter="all"]        the "All" button (or a wrapper around it)
+//   [data-stories-filter="{tag slug}"] each tag button or wrapper (Collection List of
+//                                      Story Tags); data-stories-featured="{Featured Story: Slug}"
+//                                      is-active / aria-pressed go on the button inside
+//   [data-stories-featured-list]       wraps the Collection List of Stories in the large layout
+//     [data-story-slug]                each story; the value is the slug, or empty to
+//                                      read it from the story's link (/stories/{slug})
+//     [data-story-flag="featured-all"] inside a story, conditionally visible when
 //                                      "Featured on All" is on
-//   [data-stories-list]                Collection List of Stories (cards), newest first
-//     [data-story-slug="{slug}"]       each item
-//     [data-story-tag="{tag slug}"]    inside an item, one per tag (nested list)
+//   [data-stories-list]                wraps the Collection List of Stories (cards), newest first
+//     [data-story-slug]                each story (as above)
+//     [data-story-tag="{tag slug}"]    inside a story, one per tag: either a nested list, or
+//                                      one marker per tag, conditionally visible when
+//                                      "Tags contains {tag}" (hidden markers are ignored)
 //   [data-stories-load-more]           the Load more button
 //   [data-stories-empty]               shown when a view has no stories
 //
@@ -34,11 +38,22 @@ function initStoriesFilter(scope = document) {
         const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
         const filters = [...root.querySelectorAll("[data-stories-filter]")];
+        // Conditional visibility in Webflow leaves hidden elements in the DOM with .w-condition-invisible
+        const isConditionallyHidden = el => !!el.closest(".w-condition-invisible");
+        const slugOf = (el) => {
+            const value = el.getAttribute("data-story-slug");
+            if (value) return value;
+            const link = el.querySelector('a[href*="/stories/"]');
+            return link ? new URL(link.href, window.location.href).pathname.split("/").filter(Boolean).pop() : null;
+        };
+
         const featuredItems = [...root.querySelectorAll("[data-stories-featured-list] [data-story-slug]")];
+        featuredItems.forEach(item => item.setAttribute("data-story-slug", slugOf(item) || ""));
         const cards = [...root.querySelectorAll("[data-stories-list] [data-story-slug]")].map(el => ({
             el,
-            slug: el.getAttribute("data-story-slug"),
-            tags: [...el.querySelectorAll("[data-story-tag]")].map(t => t.getAttribute("data-story-tag")).filter(Boolean),
+            slug: slugOf(el),
+            tags: [...el.querySelectorAll("[data-story-tag]")].filter(t => !isConditionallyHidden(t))
+                .map(t => t.getAttribute("data-story-tag")).filter(Boolean),
         }));
         const loadMore = root.querySelector("[data-stories-load-more]");
         const empty = root.querySelector("[data-stories-empty]");
@@ -46,7 +61,10 @@ function initStoriesFilter(scope = document) {
         // "Featured on All": the flag element is conditionally visible in Webflow
         // (hidden flags stay in the DOM with .w-condition-invisible)
         const isFlagged = item => [...item.querySelectorAll('[data-story-flag="featured-all"]')]
-            .some(f => !f.classList.contains("w-condition-invisible"));
+            .some(f => !isConditionallyHidden(f));
+
+        // The element that shows the state: the filter itself if it's a button/link, else the one inside
+        const stateTarget = f => (f.matches("button, a") ? f : f.querySelector("button, a")) || f;
 
         const validTags = new Set(filters.map(f => f.getAttribute("data-stories-filter")).filter(t => t && t !== "all"));
         let current = "all";
@@ -90,8 +108,9 @@ function initStoriesFilter(scope = document) {
 
             filters.forEach(f => {
                 const active = f.getAttribute("data-stories-filter") === current;
-                f.classList.toggle("is-active", active);
-                f.setAttribute("aria-pressed", String(active));
+                const target = stateTarget(f);
+                target.classList.toggle("is-active", active);
+                target.setAttribute("aria-pressed", String(active));
             });
 
             if (animate && !reduceMotion) {

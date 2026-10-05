@@ -4,7 +4,7 @@
 /* Before the script runs: no featured story yet, and only the first 9 cards, so the
    page doesn't show every story and then collapse */
 html:not(.wf-design-mode) [data-stories]:not(.stories-is-ready) [data-stories-featured-list] [data-story-slug],
-html:not(.wf-design-mode) [data-stories]:not(.stories-is-ready) [data-stories-list] [data-story-slug]:nth-child(n+10),
+html:not(.wf-design-mode) [data-stories]:not(.stories-is-ready) [data-stories-list] .w-dyn-item:nth-child(n+10),
 html:not(.wf-design-mode) [data-stories]:not(.stories-is-ready) [data-stories-empty] {
     display: none !important;
 }
