@@ -11,6 +11,7 @@ const OUT = path.resolve("dist");
 // Load order: site.js first (GSAP defaults + Lenis), then the Odyn v7 order.
 const JS = [
   "site.js",
+  "components/niq-debug.js",
   "main.js",
   "components/gradientwavetext.js",
   "components/tabsystemautoplay.js",
