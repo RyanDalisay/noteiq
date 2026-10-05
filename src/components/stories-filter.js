@@ -50,14 +50,30 @@ function initStoriesFilter(scope = document) {
             return title ? "title:" + title.textContent.trim() : null;
         };
 
-        const featuredItems = [...root.querySelectorAll("[data-stories-featured-list] [data-story-slug]")];
-        featuredItems.forEach(item => item.setAttribute("data-story-slug", slugOf(item) || ""));
+        const titleOf = el => {
+            const title = el.querySelector("h1, h2, h3, h4, h5, h6");
+            return title ? title.textContent.trim() : null;
+        };
+
         const cards = [...root.querySelectorAll("[data-stories-list] [data-story-slug]")].map(el => ({
             el,
             slug: slugOf(el),
+            title: titleOf(el),
             tags: [...el.querySelectorAll("[data-story-tag]")].filter(t => !isConditionallyHidden(t))
                 .map(t => t.getAttribute("data-story-tag")).filter(Boolean),
         }));
+
+        // A featured story is matched to its card by slug; if only one of the two has a link
+        // (so their slugs differ), it's matched by title instead
+        const featuredItems = [...root.querySelectorAll("[data-stories-featured-list] [data-story-slug]")];
+        featuredItems.forEach(item => {
+            let slug = slugOf(item);
+            if (!cards.some(c => c.slug === slug)) {
+                const card = cards.find(c => c.title && c.title === titleOf(item));
+                if (card) slug = card.slug;
+            }
+            item.setAttribute("data-story-slug", slug || "");
+        });
         const loadMore = root.querySelector("[data-stories-load-more]");
         const empty = root.querySelector("[data-stories-empty]");
 
