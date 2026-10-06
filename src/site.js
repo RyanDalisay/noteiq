@@ -5,10 +5,16 @@
 // Bundled first so the GSAP defaults apply to everything after it.
 // -----------------------------------------
 
-gsap.registerPlugin(CustomEase);
-
-CustomEase.create("osmo", "0.625, 0.05, 0, 1");
-gsap.defaults({ ease: "osmo", duration: 0.6 });
+// CustomEase is loaded by webflow/footer.html just before this bundle. If it's ever
+// missing (e.g. mid-way through a custom-code change), fall back to a close ease
+// rather than stopping the whole bundle.
+if (typeof window.CustomEase !== "undefined") {
+    gsap.registerPlugin(CustomEase);
+    CustomEase.create("osmo", "0.625, 0.05, 0, 1");
+    gsap.defaults({ ease: "osmo", duration: 0.6 });
+} else {
+    gsap.defaults({ ease: "power3.out", duration: 0.6 });
+}
 
 let lenis = null; // also used by table-of-contents.js to scroll to headings
 

@@ -122,6 +122,7 @@
             if (scope.querySelectorAll) Array.prototype.forEach.call(scope.querySelectorAll(sel), fn);
         }
         function destroyEl(el) {
+            if (el._niqMount && near) { near.unobserve(el); el._niqMount = null; }
             try { if (el._niq && el._niq.kill) el._niq.kill(); } catch (e) { }
             ['_loop', '_dots'].forEach(function (k) { try { if (el[k] && el[k].stop) el[k].stop(); } catch (e) { } });
             try { if (el._io) el._io.disconnect(); } catch (e) { }
@@ -132,13 +133,29 @@
             el.className = el.className.replace(OWN, '').replace(/\s+/g, ' ').trim();
             el.innerHTML = '';
         }
+        /* Build each animation only when it comes within about one screen of view,
+           so a page doesn't pay for animations far down it (or hidden copies,
+           e.g. desktop-only panels on phones) while it loads */
+        var near = ('IntersectionObserver' in window) ? new IntersectionObserver(function (es) {
+            es.forEach(function (e) {
+                if (!e.isIntersecting) return;
+                var el = e.target, fn = el._niqMount;
+                near.unobserve(el); el._niqMount = null;
+                if (fn && el.isConnected) fn(el);
+            });
+        }, { rootMargin: '100% 0px' }) : null;
+        function mountWhenNear(el, fn) {
+            if (el.getAttribute('data-niq-mounted') || el._niqMount) return;
+            if (!near) return fn(el);
+            el._niqMount = fn; near.observe(el);
+        }
         var api = {
             register: function (sel, mountFn) {
                 for (var i = 0; i < reg.length; i++) if (reg[i].sel === sel) return;
                 reg.push({ sel: sel, mount: mountFn });
             },
-            mount: function (scope) { scope = scope || document; reg.forEach(function (r) { each(scope, r.sel, r.mount); }); },
-            destroy: function (scope) { scope = scope || document; each(scope, '[data-niq-mounted]', destroyEl); },
+            mount: function (scope) { scope = scope || document; reg.forEach(function (r) { each(scope, r.sel, function (el) { mountWhenNear(el, r.mount); }); }); },
+            destroy: function (scope) { scope = scope || document; each(scope, '[data-niq-anim]', function (el) { if (el._niqMount && near) { near.unobserve(el); el._niqMount = null; } }); each(scope, '[data-niq-mounted]', destroyEl); },
             watch: function () {
                 if (watching || !('MutationObserver' in window)) return;
                 watching = true;

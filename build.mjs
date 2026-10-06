@@ -38,6 +38,7 @@ const JS = [
 ];
 
 const CSS = [
+  "lenis.css",
   "components/tabsystemautoplay.css",
   "components/linerevealtestimonials.css",
   "components/radial-gsap-slider.css",
