@@ -57,6 +57,17 @@ function initCountUp(scope = document) {
         parent.insertBefore(span, node);
         parent.insertBefore(document.createTextNode(after), node);
         parent.removeChild(node);
+
+        // Reserve the widest value the count can pass through: the final number with
+        // every digit swapped for the font's widest digit (digits aren't equal widths)
+        const finalWidth = span.getBoundingClientRect().width;
+        let widest = "0", widestWidth = 0;
+        for (const d of "0123456789") {
+            span.textContent = d;
+            const w = span.getBoundingClientRect().width;
+            if (w > widestWidth) { widest = d; widestWidth = w; }
+        }
+        span.textContent = raw.replace(/\d/g, widest);
         span.style.minWidth = span.getBoundingClientRect().width + "px";
 
         const counter = { value: from };
@@ -68,7 +79,11 @@ function initCountUp(scope = document) {
             ease: "expo.out",
             paused: true,
             onUpdate: () => { span.textContent = format(counter.value); },
-            onComplete: () => { span.textContent = raw; },
+            onComplete: () => {
+                span.textContent = raw;
+                // Settle the reserved space down to the real number, so it ends up centered
+                gsap.to(span, { minWidth: finalWidth, duration: 0.4, ease: "power2.out", onComplete: () => { span.style.minWidth = ""; } });
+            },
         });
         const trigger = ScrollTrigger.create({
             trigger: el,

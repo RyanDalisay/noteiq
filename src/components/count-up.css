@@ -1,8 +1,8 @@
 /* Count up — see count-up.js. The number sits in .cu-num, reserved at the final
-   value's width; right-aligned so it stays against its unit ("50 hours"), with
-   tabular figures so the digits don't jitter while counting. */
+   value's width and right-aligned so it stays against its unit ("50 hours").
+   Digits keep the font's own (proportional) spacing: tabular figures spread
+   narrow digits like "1" apart in display serifs. */
 .cu-num {
     display: inline-block;
     text-align: right;
-    font-variant-numeric: tabular-nums;
 }
